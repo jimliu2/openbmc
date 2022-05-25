@@ -3,7 +3,7 @@ DESCRIPTION = "ARM Trusted Firmware"
 LICENSE = "BSD"
 LIC_FILES_CHKSUM ?= "file://license.rst;md5=1dd070c98a281d18d9eefd938729b031"
 
-PV="1.3.0+git${SRCPV}"
+PV="1.5.0+git${SRCPV}"
 
 inherit deploy
 
