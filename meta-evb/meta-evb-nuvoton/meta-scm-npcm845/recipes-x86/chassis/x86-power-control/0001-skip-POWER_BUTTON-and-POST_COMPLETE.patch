@@ -1,0 +1,87 @@
+From ee426f11746cbae12c21844f7a1091a7fa41e8bf Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Fri, 13 May 2022 14:07:17 +0800
+Subject: [PATCH] skip POWER_BUTTON and POST_COMPLETE
+
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
+---
+ src/power_control.cpp | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/src/power_control.cpp b/src/power_control.cpp
+index e8a8958..1b4b1bc 100644
+--- a/src/power_control.cpp
++++ b/src/power_control.cpp
+@@ -2666,7 +2666,7 @@ int main(int argc, char* argv[])
+             return -1;
+         }
+     }
+-
++#if 0
+     // Request POWER_BUTTON GPIO events
+     if (powerButtonConfig.type == ConfigType::GPIO)
+     {
+@@ -2682,7 +2682,7 @@ int main(int argc, char* argv[])
+             power_control::dbusGPIOMatcher(powerButtonConfig,
+                                            powerButtonHandler);
+     }
+-
++#endif
+     // Request RESET_BUTTON GPIO events
+     if (resetButtonConfig.type == ConfigType::GPIO)
+     {
+@@ -2736,7 +2736,7 @@ int main(int argc, char* argv[])
+         "PropertiesChanged',arg0='xyz.openbmc_project.State.Host.Misc'",
+         hostMiscHandler);
+ #endif
+-
++#if 0
+     // Request POST_COMPLETE GPIO events
+     if (postCompleteConfig.type == ConfigType::GPIO)
+     {
+@@ -2758,6 +2758,7 @@ int main(int argc, char* argv[])
+             "postComplete name should be configured from json config file");
+         return -1;
+     }
++#endif
+ 
+     // initialize NMI_OUT GPIO.
+     if (!nmiOutConfig.lineName.empty())
+@@ -3123,6 +3124,7 @@ int main(int argc, char* argv[])
+     sdbusplus::asio::object_server buttonsServer =
+         sdbusplus::asio::object_server(conn);
+ 
++#if 0
+     if (!powerButtonConfig.lineName.empty())
+     {
+         // Power Button Interface
+@@ -3179,7 +3181,7 @@ int main(int argc, char* argv[])
+ 
+         powerButtonIface->initialize();
+     }
+-
++#endif
+     if (!resetButtonConfig.lineName.empty())
+     {
+         // Reset Button Interface
+@@ -3334,7 +3336,8 @@ int main(int argc, char* argv[])
+     // Get the initial OS state based on POST complete
+     //      0: Asserted, OS state is "Standby" (ready to boot)
+     //      1: De-Asserted, OS state is "Inactive"
+-    std::string osState;
++    std::string osState = "Standby";
++    #if 0
+     if (postCompleteConfig.type == ConfigType::GPIO)
+     {
+         osState = postCompleteLine.get_value() > 0 ? "Inactive" : "Standby";
+@@ -3343,6 +3346,7 @@ int main(int argc, char* argv[])
+     {
+         osState = getProperty(postCompleteConfig) > 0 ? "Inactive" : "Standby";
+     }
++    #endif
+ 
+     osIface->register_property("OperatingSystemState", std::string(osState));
+ 
+-- 
+2.34.1
+
