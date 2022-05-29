@@ -1,4 +1,4 @@
-From 4fc09e9a0f9acfe6df3a29e8f99a5ade82c74c16 Mon Sep 17 00:00:00 2001
+From e524343efc3a1ee3173beca4ea3657de879a3484 Mon Sep 17 00:00:00 2001
 From: Joseph Liu <kwliu@nuvoton.com>
 Date: Mon, 7 Mar 2022 16:26:54 +0800
 Subject: [PATCH] kernel: scm dts
@@ -6,8 +6,8 @@ Subject: [PATCH] kernel: scm dts
 Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
 ---
  arch/arm64/boot/dts/nuvoton/Makefile          |   1 +
- .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 861 ++++++++++++++++++
- 2 files changed, 862 insertions(+)
+ .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 848 ++++++++++++++++++
+ 2 files changed, 849 insertions(+)
  create mode 100644 arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 
 diff --git a/arch/arm64/boot/dts/nuvoton/Makefile b/arch/arm64/boot/dts/nuvoton/Makefile
@@ -21,10 +21,10 @@ index a99dab90472a..94e0a37c994c 100644
 \ No newline at end of file
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 new file mode 100644
-index 000000000000..03b2a14a2261
+index 000000000000..01db2aea8445
 --- /dev/null
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
-@@ -0,0 +1,861 @@
+@@ -0,0 +1,848 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2018 Nuvoton Technology tomer.maimon@nuvoton.com
 +// Copyright 2018 Google, Inc.
@@ -235,43 +235,37 @@ index 000000000000..03b2a14a2261
 +			};
 +		};
 +#if 0
-+		fiu1: spi@fb002000 {
-+			/*pinctrl-0 = <&spi1_pins>, <&spi1quad_pins>;*/
++		fiu3: spi@c0000000 {
 +			status = "okay";
++			pinctrl-0 = <>;
 +			spi-nor@0 {
 +				compatible = "jedec,spi-nor";
 +				#address-cells = <1>;
 +				#size-cells = <1>;
 +				reg = <0>;
-+				spi-max-frequency = <5000000>;
++				spi-max-frequency = <50000000>;
 +				partitions@A0000000 {
 +					compatible = "fixed-partitions";
 +					#address-cells = <1>;
 +					#size-cells = <1>;
 +					system1@0 {
-+						label = "spi1-system1";
++						label = "image-bios";
 +						reg = <0x0 0x0>;
 +					};
 +				};
 +			};
-+		};
-+#endif
-+#if 0
-+		fiu3: spi@c0000000 {
-+			pinctrl-0 = <&spi3_pins>, <&spi3quad_pins>;
-+			status = "okay";
-+			spi-nor@0 {
++			spi-nor@1 {
 +				compatible = "jedec,spi-nor";
 +				#address-cells = <1>;
 +				#size-cells = <1>;
-+				reg = <0>;
-+				spi-max-frequency = <5000000>;
-+				partitions@A0000000 {
++				reg = <1>;
++				spi-max-frequency = <50000000>;
++				partitions@A8000000 {
 +					compatible = "fixed-partitions";
 +					#address-cells = <1>;
 +					#size-cells = <1>;
 +					system1@0 {
-+						label = "spi3-system1";
++						label = "image-bios-1";
 +						reg = <0x0 0x0>;
 +					};
 +				};
@@ -415,25 +409,18 @@ index 000000000000..03b2a14a2261
 +
 +			sgpio2: sgpio@102000 {
 +				status = "okay";
++				bus-frequency = <16000000>;
++				nin_gpios = <38>;
++				nout_gpios = <13>;
 +				gpio-line-names =
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","",
-+					"","","","","","","","";
-+
-+			};
++					"BMC_SPI_CPLD_FPGA_SEL","TPM_BMC_ALERT_N","BMC_PCH_FNM","FM_UV_ADR_TRIGGER_EN","FM_SPD_SWITCH_CTRL_N","SMB_SLIVER_RST_BMC_N","PWRBRK_SLI_OE_N","FM_ME_RECOVERY_N",
++					"FM_BIOS_RECOVERY","FM_BIOS_MRC_DEBUG_MSG_DIS_N","RST_BMC_RTCRST","IRQ_BMC_PCH_NMI","FM_BMC_ONCTL_N",
++					"BMC_NODE_ID_0","BMC_NODE_ID_1","BMC_NODE_ID_2","BMC_NODE_ID_3","BMC_NODE_ID_4","BMC_NODE_ID_5","P0_SKTOCC_N","P1_SKTOCC_N",
++					"P0_PROCHOT_N","P1_PROCHOT_N","FM_CPU0_THERMTRIP_LATCH_LVT3_N","FM_CPU1_THERMTRIP_LATCH_LVT3_N","H_CPU0_MEMHOT_OUT_LVC1_N","H_CPU1_MEMHOT_OUT_LVC1_N","P0_MEM_VRHOT_N","P1_MEM_VRHOT_N",
++					"P0_BMC_MEMTRIP_N","P1_BMC_MEMTRIP_N","FM_CPU0_ERR0_LVT3_N","FM_CPU0_ERR1_LVT3_N","FM_CPU0_ERR2_LVT3_N","SMB_BMC_ALERT1_N","SMB_BMC_ALERT2_N","SMB_BMC_ALERT3_N",
++					"SMB_BMC_ALERT4_N","SMB_BMC_ALERT5_N","SMB_BMC_ALERT6_N","SMB_BMC_ALERT7_N","SMB_BMC_ALERT8_N","SMB_BMC_ALERT9_N","SMB_BMC_ALERT10_N","SMB_BMC_ALERT11_N",
++					"SMB_BMC_ALERT12_N","FM_CPU_MSMI_CATERR_LVT3_N","POST_COMPLETE","FM_ADR_COMPLETE_BMC","IRQ_HSC1_FAULT_N","FM_DBP_PRESENT_N";
++            };
 +
 +			jtm1: jtm@208000 {
 +				status = "okay";
@@ -887,5 +874,5 @@ index 000000000000..03b2a14a2261
 +	status = "okay";
 +};
 -- 
-2.17.1
+2.34.1
 
