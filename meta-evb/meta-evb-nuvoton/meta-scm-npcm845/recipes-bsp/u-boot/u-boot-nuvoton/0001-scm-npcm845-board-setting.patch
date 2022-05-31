@@ -35,14 +35,14 @@ index a674757064..dbb7ecbfaf 100644
 +	/*set PCIRREL*/
 +	setbits_le32(0xf08000a0, BIT(0));
 +
-+	clrbits_le32(0xf0801080, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf0801084, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf0801088, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf080108c, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf0801090, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf0801094, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf0801098, BIT(7) | BIT(8) | BIT(9) | BIT(5));
-+	clrbits_le32(0xf080109c, BIT(7) | BIT(8) | BIT(9) | BIT(5));
++	clrbits_le32(0xf0801080, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf0801084, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf0801088, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf080108c, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf0801090, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf0801094, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf0801098, BIT(7) | BIT(9) | BIT(5));
++	clrbits_le32(0xf080109c, BIT(7) | BIT(9) | BIT(5));
 +
 +	clrbits_le32(0xf0801038, BIT(31) | BIT(24) | BIT(25));
 +	clrbits_le32(0xf080103c, BIT(31) | BIT(24) | BIT(25));
