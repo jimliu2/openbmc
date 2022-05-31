@@ -1,4 +1,4 @@
-From e524343efc3a1ee3173beca4ea3657de879a3484 Mon Sep 17 00:00:00 2001
+From b4308e90c262c627b4236e8e06508e577fd9de7b Mon Sep 17 00:00:00 2001
 From: Joseph Liu <kwliu@nuvoton.com>
 Date: Mon, 7 Mar 2022 16:26:54 +0800
 Subject: [PATCH] kernel: scm dts
@@ -6,8 +6,8 @@ Subject: [PATCH] kernel: scm dts
 Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
 ---
  arch/arm64/boot/dts/nuvoton/Makefile          |   1 +
- .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 848 ++++++++++++++++++
- 2 files changed, 849 insertions(+)
+ .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 844 ++++++++++++++++++
+ 2 files changed, 845 insertions(+)
  create mode 100644 arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 
 diff --git a/arch/arm64/boot/dts/nuvoton/Makefile b/arch/arm64/boot/dts/nuvoton/Makefile
@@ -21,10 +21,10 @@ index a99dab90472a..94e0a37c994c 100644
 \ No newline at end of file
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 new file mode 100644
-index 000000000000..01db2aea8445
+index 000000000000..132b4fe41cc8
 --- /dev/null
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
-@@ -0,0 +1,848 @@
+@@ -0,0 +1,844 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2018 Nuvoton Technology tomer.maimon@nuvoton.com
 +// Copyright 2018 Google, Inc.
@@ -141,10 +141,6 @@ index 000000000000..01db2aea8445
 +	};
 +
 +	ahb {
-+		/*rstc: rstc@f0801000 {
-+			nuvoton,sw-reset-number = <2>;
-+		};*/
-+
 +		mc: memory-controller@f0824000 {
 +			compatible = "nuvoton,npcm8xx-sdram-edac";
 +			reg = <0x0 0xf0824000 0x0 0x1000>;
@@ -165,6 +161,10 @@ index 000000000000..01db2aea8445
 +
 +			status = "okay";
 +			use-ncsi;
++		};
++
++		pcie: pcie@e1000000 {
++			status = "disabled";
 +		};
 +
 +		aes: aes@f0858000 {
@@ -403,10 +403,6 @@ index 000000000000..01db2aea8445
 +				status = "okay";
 +			};
 +
-+			tmps: tmps@188000 {
-+				status = "okay";
-+			};
-+
 +			sgpio2: sgpio@102000 {
 +				status = "okay";
 +				bus-frequency = <16000000>;
@@ -420,7 +416,7 @@ index 000000000000..01db2aea8445
 +					"P0_BMC_MEMTRIP_N","P1_BMC_MEMTRIP_N","FM_CPU0_ERR0_LVT3_N","FM_CPU0_ERR1_LVT3_N","FM_CPU0_ERR2_LVT3_N","SMB_BMC_ALERT1_N","SMB_BMC_ALERT2_N","SMB_BMC_ALERT3_N",
 +					"SMB_BMC_ALERT4_N","SMB_BMC_ALERT5_N","SMB_BMC_ALERT6_N","SMB_BMC_ALERT7_N","SMB_BMC_ALERT8_N","SMB_BMC_ALERT9_N","SMB_BMC_ALERT10_N","SMB_BMC_ALERT11_N",
 +					"SMB_BMC_ALERT12_N","FM_CPU_MSMI_CATERR_LVT3_N","POST_COMPLETE","FM_ADR_COMPLETE_BMC","IRQ_HSC1_FAULT_N","FM_DBP_PRESENT_N";
-+            };
++			};
 +
 +			jtm1: jtm@208000 {
 +				status = "okay";
