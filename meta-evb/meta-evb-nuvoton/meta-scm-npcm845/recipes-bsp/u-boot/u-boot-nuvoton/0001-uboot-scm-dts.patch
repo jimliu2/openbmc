@@ -220,10 +220,10 @@ index 0000000000..1881c91e2d
 +			input-enable;
 +			persist-enable;
 +		};
-+		gpio76oh_pins: gpio76oh-pins {
++		gpio76ol_pins: gpio76ol-pins {
 +			pins = "GPIO76/FANIN12";
 +			bias-disable;
-+			output-high;
++			output-low;
 +			persist-enable;
 +		};
 +		gpio77i_pins: gpio77i-pins {
@@ -1034,7 +1034,7 @@ index 0000000000..ec56b1f711
 +			&gpio73oh_pins
 +			&gpio74i_pins
 +			&gpio75i_pins
-+			&gpio76oh_pins
++			&gpio76ol_pins
 +			&gpio77i_pins
 +			&gpio78oh_pins
 +			&gpio79oh_pins
