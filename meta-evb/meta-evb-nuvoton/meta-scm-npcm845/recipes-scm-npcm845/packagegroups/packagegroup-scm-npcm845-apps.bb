@@ -63,4 +63,5 @@ RDEPENDS:${PN}-system = " \
 	net-tools \
 	ethtool \
 	phytool \
+        fan-init \
         "
