@@ -64,4 +64,5 @@ RDEPENDS:${PN}-system = " \
 	ethtool \
 	phytool \
         fan-init \
+	phosphor-post-code-manager \
         "
