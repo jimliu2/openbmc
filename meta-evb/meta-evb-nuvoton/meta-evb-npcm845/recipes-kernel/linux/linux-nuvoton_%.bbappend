@@ -11,4 +11,5 @@ SRC_URI_append_evb-npcm845 = " file://0007-arm64-dts-nuvoton-npcm845-evb-add-nmi
 SRC_URI_append_evb-npcm845 = " file://0008-dts-npcm8xx-add-psci-smp-method-tz.patch"
 SRC_URI_append_evb-npcm845 = " file://0009-device-tree-optee-enable.patch"
 SRC_URI_append_evb-npcm845 = " file://0010-replace-jtag2-pins-with-tp-jtag3-pins.patch"
+SRC_URI_append_evb-npcm845 = " file://0011-remove-unused-modules-dts.patch"
 

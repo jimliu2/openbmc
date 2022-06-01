@@ -1,0 +1,53 @@
+diff -Nur a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+--- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts	2022-05-08 15:15:06.597950300 +0300
++++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts	2022-06-01 13:59:07.459583282 +0300
+@@ -180,14 +180,14 @@
+ 			};
+ 		};
+ 
+-		gmac2: eth@f0806000 {
++		/*gmac2: eth@f0806000 {
+ 			phy-mode = "rmii";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&r1_pins
+ 					&r1oen_pins>;
+ 			phy-handle = <&phy0>;
+ 			status = "okay";
+-		};
++		};*/
+ 
+ 		mdio1: mdio@1 {
+ 			compatible = "virtual,mdio-gpio";
+@@ -607,7 +607,7 @@
+ 	};
+ };
+ 
+-&peci0 {
++/*&peci0 {
+ 	cmd-timeout-ms = <1000>;
+ 	pull-down = <0>;
+ 	host-neg-bit-rate = <15>;
+@@ -618,7 +618,7 @@
+ 		reg = <0x30>;
+ 		status = "okay";
+ 	};
+-};
++};*/
+ 
+ &i2c0 {
+ 	status = "okay";
+@@ -749,12 +749,12 @@
+ 	status = "okay";
+ };
+ 
+-&copcnt {
++/*&copcnt {
+   status = "okay";
+ };
+ 
+ &m4_rproc {
+ 	status = "okay";
+ 	memory-region = <&cp1_tag>;
+-};
++};*/
+ 
