@@ -1,0 +1,65 @@
+From b4ba89da4d8f7b93e975a9599870ddd9b629a185 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Fri, 5 Aug 2022 15:54:54 +0800
+Subject: [PATCH] dts: remove peci and gmac2 to reduce error logs
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+index 2ba972879e75..85ceb7c25b0d 100644
+--- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
++++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+@@ -18,9 +18,9 @@ aliases {
+ 		serial3 = &serial3;
+ 		ethernet0 = &gmac0;
+ 		ethernet1 = &gmac1;
+-		ethernet2 = &gmac2;
++		//ethernet2 = &gmac2;
+ 		ethernet3 = &gmac3;
+-		mdio-gpio0 = &mdio0;
++		//mdio-gpio0 = &mdio0;
+ 		mdio-gpio1 = &mdio1;
+ 		udc0 = &udc0;
+ 		udc1 = &udc1;
+@@ -153,7 +153,7 @@ gmac1: eth@f0804000 {
+ 			snps,eee-force-disable;
+ 			status = "okay";
+ 		};
+-
++#if 0
+ 		mdio0: mdio@0 {
+ 			compatible = "virtual,mdio-gpio";
+ 			gpios = <&gpio1 25 GPIO_ACTIVE_HIGH>,
+@@ -173,7 +173,7 @@ gmac2: eth@f0806000 {
+ 			phy-handle = <&phy0>;
+ 			status = "okay";
+ 		};
+-
++#endif
+ 		mdio1: mdio@1 {
+ 			compatible = "virtual,mdio-gpio";
+ 			gpios = <&gpio2 27 GPIO_ACTIVE_HIGH>, 
+@@ -606,7 +606,7 @@ eeprom@0 {
+ 		};
+ 	};
+ };
+-
++#if 0
+ &peci0 {
+ 	cmd-timeout-ms = <1000>;
+ 	pull-down = <0>;
+@@ -619,7 +619,7 @@ intel-peci-dimmtemp@30 {
+ 		status = "okay";
+ 	};
+ };
+-
++#endif
+ &i2c0 {
+ 	status = "okay";
+ 	rtc0: rtc@6f {
+-- 
+2.34.1
+
