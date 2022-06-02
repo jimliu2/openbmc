@@ -2,7 +2,7 @@
     "Exposes": [
         {
             "Name": "DUAL ROTOR FAN CONN",
-            "Status": "disabled",
+            "Pwm": 0,
             "Tachs": [
                 0,
                 1,
