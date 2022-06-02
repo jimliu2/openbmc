@@ -1,9 +1,9 @@
 FILESEXTRAPATHS:prepend:scm-npcm845 := "${THISDIR}/${PN}:"
-SRC_URI:append:scm-npcm845 = " file://config.json.in \
+SRC_URI:append:scm-npcm845 = " file://config.json \
                        file://phosphor-pid-control.service \
                      "
 
-FILES:${PN}:append:scm-npcm845 = " ${datadir}/swampd/config.json.in"
+FILES:${PN}:append:scm-npcm845 = " ${datadir}/swampd/config.json"
 
 RDEPENDS:${PN} += "bash"
 
@@ -13,7 +13,7 @@ do_install:append:scm-npcm845() {
     install -d ${D}/${bindir}
 
     install -d ${D}${datadir}/swampd
-    install -m 0644 -D ${WORKDIR}/config.json.in \
+    install -m 0644 -D ${WORKDIR}/config.json \
         ${D}${datadir}/swampd/
 
     install -d ${D}${systemd_system_unitdir}
