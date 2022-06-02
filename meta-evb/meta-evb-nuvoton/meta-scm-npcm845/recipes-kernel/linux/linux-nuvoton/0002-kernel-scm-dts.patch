@@ -1,4 +1,4 @@
-From b4308e90c262c627b4236e8e06508e577fd9de7b Mon Sep 17 00:00:00 2001
+From 535312344e60613c048c2b25b76eb76831d467c7 Mon Sep 17 00:00:00 2001
 From: Joseph Liu <kwliu@nuvoton.com>
 Date: Mon, 7 Mar 2022 16:26:54 +0800
 Subject: [PATCH] kernel: scm dts
@@ -21,7 +21,7 @@ index a99dab90472a..94e0a37c994c 100644
 \ No newline at end of file
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 new file mode 100644
-index 000000000000..132b4fe41cc8
+index 000000000000..bb1112fa27d3
 --- /dev/null
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 @@ -0,0 +1,844 @@
@@ -703,7 +703,7 @@ index 000000000000..132b4fe41cc8
 +		Ex2_P6 {
 +			gpio-hog;
 +			gpios = <6 0>;
-+			output-high;
++			output-low;
 +			line-name = "P5V_USB_INT1_EN_N";
 +		};
 +		Ex2_P7 {
@@ -870,5 +870,5 @@ index 000000000000..132b4fe41cc8
 +	status = "okay";
 +};
 -- 
-2.34.1
+2.17.1
 
