@@ -1,6 +1,6 @@
-From 1e4ba35eb977270f32100573a230a91f522409e2 Mon Sep 17 00:00:00 2001
+From f8a3f19a6075357ba1fbd06b414016710c9962ce Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Mon, 6 Jun 2022 12:15:44 +0800
+Date: Mon, 6 Jun 2022 13:56:29 +0800
 Subject: [PATCH] scm-npcm845 board setting
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
@@ -9,7 +9,7 @@ Signed-off-by: Stanley Chu <yschu@nuvoton.com>
  1 file changed, 111 insertions(+)
 
 diff --git a/board/nuvoton/arbel/arbel.c b/board/nuvoton/arbel/arbel.c
-index a674757064..09d44b253d 100644
+index a674757064..55bf8e49b4 100644
 --- a/board/nuvoton/arbel/arbel.c
 +++ b/board/nuvoton/arbel/arbel.c
 @@ -74,9 +74,120 @@ static void arbel_clk_init(void)
@@ -88,10 +88,10 @@ index a674757064..09d44b253d 100644
 +		// accept read SFDP command
 +		writel(0x5A, 0xF02102B4);
 +		// accept EN4B command
-+		//writel(0xB7, 0xF02102B8);
++		writel(0xB7, 0xF02102B8);
 +
 +		/* enable CMB0~13 */
-+		writel(0x3FFF, 0xF0210064);
++		writel(0x7FFF, 0xF0210064);
 +		/* Enalbe FLM0 */
 +		writel(0x4000a901, 0xF0210014);
 +	} else if (env_var && !strcmp(env_var, "fm3")) {
@@ -122,10 +122,10 @@ index a674757064..09d44b253d 100644
 +		// accept read SFDP command
 +		writel(0x5A, 0xF02132B4);
 +		// accept EN4B command
-+		//writel(0xB7, 0xF02132B8);
++		writel(0xB7, 0xF02132B8);
 +
 +		/* enable CMB0~13 */
-+		writel(0x3FFF, 0xF0213064);
++		writel(0x7FFF, 0xF0213064);
 +		/* Enalbe FLM3 */
 +		writel(0x4000a901, 0xF0213014);
 +	}
