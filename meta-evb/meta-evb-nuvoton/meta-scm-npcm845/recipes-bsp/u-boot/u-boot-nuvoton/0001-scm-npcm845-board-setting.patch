@@ -1,17 +1,23 @@
-From 46f9f2d2f573f77ebed735db16f7dc9936b9c8c3 Mon Sep 17 00:00:00 2001
-From: Joseph Liu <kwliu@nuvoton.com>
-Date: Sat, 28 May 2022 00:33:41 +0800
-Subject: [PATCH] scm npcm845 board setting
+From 1e4ba35eb977270f32100573a230a91f522409e2 Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Mon, 6 Jun 2022 12:15:44 +0800
+Subject: [PATCH] scm-npcm845 board setting
 
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
- board/nuvoton/arbel/arbel.c | 38 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ board/nuvoton/arbel/arbel.c | 111 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 111 insertions(+)
 
 diff --git a/board/nuvoton/arbel/arbel.c b/board/nuvoton/arbel/arbel.c
-index a674757064..dbb7ecbfaf 100644
+index a674757064..09d44b253d 100644
 --- a/board/nuvoton/arbel/arbel.c
 +++ b/board/nuvoton/arbel/arbel.c
-@@ -77,6 +77,44 @@ int board_init(void)
+@@ -74,9 +74,120 @@ static void arbel_clk_init(void)
+ 
+ int board_init(void)
+ {
++	char *env_var;
++
  	arbel_clk_init();
  	arbel_eth_init();
  
@@ -53,9 +59,80 @@ index a674757064..dbb7ecbfaf 100644
 +	clrbits_le32(0xf0801050, BIT(31) | BIT(24) | BIT(25));
 +	clrbits_le32(0xf080105c, BIT(31) | BIT(24) | BIT(25));
 +
++	env_var = env_get("fm_test");
++	if (env_var && !strcmp(env_var, "fm0")) {
++		printf("FM0 is enabled\n");
++		/* FLM0 setup */
++		// Clear FLM_CTL.MEN
++		writel(0xa901, 0xF0210014);
++
++		// Accept JEDEC ID command
++		writel(0x9f, 0xF0210280);
++		// Accept write enable/disable command
++		writel(0x04, 0xF0210284);
++		writel(0x06, 0xF0210288);
++		// accept Read Status1/2 command
++		writel(0x05, 0xF021028C);
++		writel(0x35, 0xF0210290);
++		// accept Read/Read4B command
++		writel(0x03, 0xF0210294);
++		writel(0x13, 0xF0210298);
++		writel(0x0B, 0xF021029C);
++		writel(0x0C, 0xF02102A0);
++		// accept sector_erase command
++		writel(0x20, 0xF02102A4);
++		writel(0x21, 0xF02102A8);
++		// accept program command
++		writel(0x02, 0xF02102AC);
++		writel(0x12, 0xF02102B0);
++		// accept read SFDP command
++		writel(0x5A, 0xF02102B4);
++		// accept EN4B command
++		//writel(0xB7, 0xF02102B8);
++
++		/* enable CMB0~13 */
++		writel(0x3FFF, 0xF0210064);
++		/* Enalbe FLM0 */
++		writel(0x4000a901, 0xF0210014);
++	} else if (env_var && !strcmp(env_var, "fm3")) {
++		printf("FM3 is enabled\n");
++		/* FLM3 setup */
++		// Clear FLM_CTL.MEN
++		writel(0xa901, 0xF0213014);
++
++		// Accept JEDEC ID command
++		writel(0x9f, 0xF0213280);
++		// Accept write enable/disable command
++		writel(0x04, 0xF0213284);
++		writel(0x06, 0xF0213288);
++		// accept Read Status1/2 command
++		writel(0x05, 0xF021328C);
++		writel(0x35, 0xF0213290);
++		// accept Read/Read4B command
++		writel(0x03, 0xF0213294);
++		writel(0x13, 0xF0213298);
++		writel(0x0B, 0xF021329C);
++		writel(0x0C, 0xF02132A0);
++		// accept sector_erase command
++		writel(0x20, 0xF02132A4);
++		writel(0x21, 0xF02132A8);
++		// accept program command
++		writel(0x02, 0xF02132AC);
++		writel(0x12, 0xF02132B0);
++		// accept read SFDP command
++		writel(0x5A, 0xF02132B4);
++		// accept EN4B command
++		//writel(0xB7, 0xF02132B8);
++
++		/* enable CMB0~13 */
++		writel(0x3FFF, 0xF0213064);
++		/* Enalbe FLM3 */
++		writel(0x4000a901, 0xF0213014);
++	}
++
  	return 0;
  }
  
 -- 
-2.34.1
+2.17.1
 
