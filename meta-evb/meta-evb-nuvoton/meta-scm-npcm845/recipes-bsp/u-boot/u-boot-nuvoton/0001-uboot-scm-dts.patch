@@ -1,6 +1,6 @@
-From 17e5d2e3840d5b688bd2fdb0ba1020e47e836da1 Mon Sep 17 00:00:00 2001
+From 40308920b7ff83f948ff9a223b1287bbcdf8a55e Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Fri, 27 May 2022 18:57:30 +0800
+Date: Tue, 7 Jun 2022 16:46:29 +0800
 Subject: [PATCH] uboot scm dts
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
@@ -43,7 +43,7 @@ index 126a34e27c..6dfea9750a 100644
  };
 diff --git a/arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi b/arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi
 new file mode 100644
-index 0000000000..1881c91e2d
+index 0000000000..b5e0cb2b57
 --- /dev/null
 +++ b/arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi
 @@ -0,0 +1,700 @@
@@ -590,13 +590,13 @@ index 0000000000..1881c91e2d
 +			pins = "GPIO233/SPI1_nCS1/FM1_CSO";
 +			bias-disable;
 +			input-enable;
-+			persist-enable;
++			event-clear;
 +		};
 +		gpio234i_pins: gpio234i-pins {
 +			pins = "GPIO234/PWM10/SMB20_SCL";
 +			bias-disable;
 +			input-enable;
-+			persist-enable;
++			event-clear;
 +		};
 +		gpio235oh_pins: gpio235oh-pins {
 +			pins = "GPIO235/PWM11/SMB20_SDA";
@@ -749,7 +749,7 @@ index 0000000000..1881c91e2d
 +};
 diff --git a/arch/arm/dts/nuvoton-npcm845-scm.dts b/arch/arm/dts/nuvoton-npcm845-scm.dts
 new file mode 100644
-index 0000000000..ec56b1f711
+index 0000000000..1f746a3cea
 --- /dev/null
 +++ b/arch/arm/dts/nuvoton-npcm845-scm.dts
 @@ -0,0 +1,341 @@
