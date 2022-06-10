@@ -1,15 +1,15 @@
-From 40308920b7ff83f948ff9a223b1287bbcdf8a55e Mon Sep 17 00:00:00 2001
+From 7d66eef5ab1383c4673cca531299f3788c0dfeb5 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Tue, 7 Jun 2022 16:46:29 +0800
+Date: Fri, 10 Jun 2022 10:33:32 +0800
 Subject: [PATCH] uboot scm dts
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
  arch/arm/dts/Makefile                        |   3 +-
  arch/arm/dts/nuvoton-common-npcm8xx.dtsi     |   4 +
- arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi | 700 +++++++++++++++++++
+ arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi | 704 +++++++++++++++++++
  arch/arm/dts/nuvoton-npcm845-scm.dts         | 341 +++++++++
- 4 files changed, 1047 insertions(+), 1 deletion(-)
+ 4 files changed, 1051 insertions(+), 1 deletion(-)
  create mode 100644 arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi
  create mode 100644 arch/arm/dts/nuvoton-npcm845-scm.dts
 
@@ -43,10 +43,10 @@ index 126a34e27c..6dfea9750a 100644
  };
 diff --git a/arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi b/arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi
 new file mode 100644
-index 0000000000..b5e0cb2b57
+index 0000000000..c24452d456
 --- /dev/null
 +++ b/arch/arm/dts/nuvoton-npcm845-scm-pincfg.dtsi
-@@ -0,0 +1,700 @@
+@@ -0,0 +1,704 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2018 Nuvoton Technology
 +
@@ -608,6 +608,10 @@ index 0000000000..b5e0cb2b57
 +		fm0cso_slew: fm0cso-slew {
 +			pins = "GPIO199/SMB0D_SCL/FM0_CSO";
 +			slew-rate = <1>;
++		};
++		fm3cso_slew: fm3cso-slew {
++			pins = "GPIO187/SPI3_nCS1_SMB14_SDA";
++			slew-rate = <0>;
 +		};
 +		pin108_slew: pin108-slew {
 +			pins = "GPIO108/SG1_MDC";

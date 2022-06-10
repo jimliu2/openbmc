@@ -1,41 +1,42 @@
-From c5991846171161152d251e14dfce5bfe1d5b939d Mon Sep 17 00:00:00 2001
+From 4dbf4c39a2a0c96b9700d2bc2c5f56030d717d26 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Mon, 6 Jun 2022 13:13:30 +0800
-Subject: [PATCH] scm-npcm845 boot from bios1
+Date: Fri, 10 Jun 2022 10:40:38 +0800
+Subject: [PATCH] scm-npcm845-boot-from-bios1
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
- arch/arm/dts/nuvoton-npcm845-scm.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm/dts/nuvoton-npcm845-scm.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/arch/arm/dts/nuvoton-npcm845-scm.dts b/arch/arm/dts/nuvoton-npcm845-scm.dts
-index 1f746a3cea..818e3e371e 100644
+index 1f746a3cea..f653c355c9 100644
 --- a/arch/arm/dts/nuvoton-npcm845-scm.dts
 +++ b/arch/arm/dts/nuvoton-npcm845-scm.dts
-@@ -245,8 +245,10 @@
+@@ -245,8 +245,11 @@
  &pinctrl {
          pinctrl-names = "default";
          pinctrl-0 = <
-+#if 0
++			#if 0
  			&fm0cso_slew
  			&fm0_pins
-+#endif
++			#endif
++			&fm3cso_slew
  			&bu4_pins
  			&bu5_pins
  			&gspi_pins
-@@ -320,6 +322,7 @@
+@@ -320,6 +323,7 @@
  			&gpio162i_pins
  			&gpio169ol_pins
  			&gpio170i_pins
-+#if 0
++			#if 0
  			&gpio183i_pins
  			&gpio184i_pins
  			&gpio185i_pins
-@@ -327,6 +330,7 @@
+@@ -327,6 +331,7 @@
  			&gpio187od_pins
  			&gpio188i_pins
  			&gpio189i_pins
-+#endif
++			#endif
  			&gpio190oh_pins
  			&gpio200i_pins
  			&gpio218ol_pins
