@@ -6,7 +6,7 @@ LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://Licenses/README;md5=5a7450c57ffe5ae63fd732446b988025"
 
 UBRANCH = "npcm-v2021.04"
-SRCREV = "c875de20d49c2e3adcd6a40bb63ed7444cfedad7"
+SRCREV = "2ac30dca81b658e423879d51eacb91199bcceab3"
 
 SRC_URI = "git://github.com/Nuvoton-Israel/u-boot.git;branch=${UBRANCH}"
 
