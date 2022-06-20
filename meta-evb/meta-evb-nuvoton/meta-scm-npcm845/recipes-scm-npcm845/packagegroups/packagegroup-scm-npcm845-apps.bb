@@ -67,4 +67,5 @@ RDEPENDS:${PN}-system = " \
 	phytool \
         fan-init \
 	phosphor-post-code-manager \
+        update-psu \
         "
