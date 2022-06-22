@@ -1,4 +1,4 @@
-From 7dc1b2b8c3b11d701100f941c531fa9dad7a0564 Mon Sep 17 00:00:00 2001
+From d144908c99e525ecb322ca80549bb6e5da6fe30d Mon Sep 17 00:00:00 2001
 From: Joseph Liu <kwliu@nuvoton.com>
 Date: Mon, 7 Mar 2022 16:26:54 +0800
 Subject: [PATCH] kernel: scm dts
@@ -6,8 +6,8 @@ Subject: [PATCH] kernel: scm dts
 Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
 ---
  arch/arm64/boot/dts/nuvoton/Makefile          |   1 +
- .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 840 ++++++++++++++++++
- 2 files changed, 841 insertions(+)
+ .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 860 ++++++++++++++++++
+ 2 files changed, 861 insertions(+)
  create mode 100644 arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 
 diff --git a/arch/arm64/boot/dts/nuvoton/Makefile b/arch/arm64/boot/dts/nuvoton/Makefile
@@ -21,10 +21,10 @@ index a99dab90472a..94e0a37c994c 100644
 \ No newline at end of file
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 new file mode 100644
-index 000000000000..dcec76e77e27
+index 000000000000..4297c9e81c86
 --- /dev/null
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
-@@ -0,0 +1,840 @@
+@@ -0,0 +1,860 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2018 Nuvoton Technology tomer.maimon@nuvoton.com
 +// Copyright 2018 Google, Inc.
@@ -137,6 +137,26 @@ index 000000000000..dcec76e77e27
 +		identify {
 +			label = "identify";
 +			gpios = <&gpio1 30 GPIO_ACTIVE_LOW>; /* gpio62 */
++		};
++
++		caterr {
++			label = "caterr";
++			gpios = <&gpio1 31 GPIO_ACTIVE_LOW>; /* gpio63 */
++		};
++
++		power_green {
++			label = "power_green";
++			gpios = <&gpio1 12 GPIO_ACTIVE_LOW>; /* gpio44 */
++		};
++
++		power_amber {
++			label = "power_amber";
++			gpios = <&gpio1 13 GPIO_ACTIVE_LOW>; /* gpio45 */
++		};
++
++		blade_attention {
++			label = "blade_attention";
++			gpios = <&gpio1 14 GPIO_ACTIVE_LOW>; /* gpio46 */
 +		};
 +	};
 +
@@ -866,5 +886,5 @@ index 000000000000..dcec76e77e27
 +	status = "okay";
 +};
 -- 
-2.17.1
+2.34.1
 

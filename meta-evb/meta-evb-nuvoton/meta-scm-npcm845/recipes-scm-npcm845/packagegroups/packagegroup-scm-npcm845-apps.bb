@@ -68,4 +68,5 @@ RDEPENDS:${PN}-system = " \
         fan-init \
 	phosphor-post-code-manager \
         update-psu \
+        scm-boot-status-led \
         "
