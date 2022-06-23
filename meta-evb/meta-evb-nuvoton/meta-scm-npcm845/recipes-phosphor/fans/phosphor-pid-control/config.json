@@ -38,7 +38,7 @@
                         "feedFwdGainCoeff": 1.0,
                         "integralLimit_min": 0.0,
                         "integralLimit_max": 0.0,
-                        "outLim_min": 10.0,
+                        "outLim_min": 70.0,
                         "outLim_max": 100.0,
                         "slewNeg": 0.0,
                         "slewPos": 0.0
