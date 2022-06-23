@@ -69,4 +69,5 @@ RDEPENDS:${PN}-system = " \
 	phosphor-post-code-manager \
         update-psu \
         scm-boot-status-led \
+        cpu-err \
         "

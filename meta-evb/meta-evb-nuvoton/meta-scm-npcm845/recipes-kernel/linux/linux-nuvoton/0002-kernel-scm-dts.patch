@@ -1,4 +1,4 @@
-From d144908c99e525ecb322ca80549bb6e5da6fe30d Mon Sep 17 00:00:00 2001
+From 5c1df6f2fd70373a45c26b99f324e7bd4242fb68 Mon Sep 17 00:00:00 2001
 From: Joseph Liu <kwliu@nuvoton.com>
 Date: Mon, 7 Mar 2022 16:26:54 +0800
 Subject: [PATCH] kernel: scm dts
@@ -6,8 +6,8 @@ Subject: [PATCH] kernel: scm dts
 Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
 ---
  arch/arm64/boot/dts/nuvoton/Makefile          |   1 +
- .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 860 ++++++++++++++++++
- 2 files changed, 861 insertions(+)
+ .../boot/dts/nuvoton/nuvoton-npcm845-scm.dts  | 869 ++++++++++++++++++
+ 2 files changed, 870 insertions(+)
  create mode 100644 arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 
 diff --git a/arch/arm64/boot/dts/nuvoton/Makefile b/arch/arm64/boot/dts/nuvoton/Makefile
@@ -21,10 +21,10 @@ index a99dab90472a..94e0a37c994c 100644
 \ No newline at end of file
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
 new file mode 100644
-index 000000000000..4297c9e81c86
+index 000000000000..d45fdd428520
 --- /dev/null
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-scm.dts
-@@ -0,0 +1,860 @@
+@@ -0,0 +1,869 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2018 Nuvoton Technology tomer.maimon@nuvoton.com
 +// Copyright 2018 Google, Inc.
@@ -157,6 +157,15 @@ index 000000000000..4297c9e81c86
 +		blade_attention {
 +			label = "blade_attention";
 +			gpios = <&gpio1 14 GPIO_ACTIVE_LOW>; /* gpio46 */
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		cpu-err {
++			label = "cpu-err";
++			gpios = <&sgpio2 34 GPIO_ACTIVE_LOW>;
++			linux,code = <34>;
 +		};
 +	};
 +
