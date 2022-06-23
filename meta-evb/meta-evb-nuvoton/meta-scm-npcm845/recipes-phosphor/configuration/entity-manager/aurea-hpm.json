@@ -1,6 +1,7 @@
 {
     "Exposes": [
         {
+            "LED": "fan_fault",
             "Name": "DUAL ROTOR FAN CONN",
             "Pwm": 0,
             "Tachs": [
@@ -28,6 +29,20 @@
             "PowerState": "Always",
             "Index": 0,
             "Name": "Fan0",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -39,6 +54,20 @@
             "PowerState": "Always",
             "Index": 1,
             "Name": "Fan1",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -51,6 +80,20 @@
             "PowerState": "Always",
             "Index": 2,
             "Name": "Fan2",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -62,6 +105,20 @@
             "PowerState": "Always",
             "Index": 3,
             "Name": "Fan3",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -73,6 +130,20 @@
             "PowerState": "Always",
             "Index": 4,
             "Name": "Fan4",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -84,6 +155,20 @@
             "PowerState": "Always",
             "Index": 5,
             "Name": "Fan5",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -95,6 +180,20 @@
             "PowerState": "Always",
             "Index": 6,
             "Name": "Fan6",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -106,6 +205,20 @@
             "PowerState": "Always",
             "Index": 7,
             "Name": "Fan7",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -117,6 +230,20 @@
             "PowerState": "Always",
             "Index": 8,
             "Name": "Fan8",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -128,6 +255,20 @@
             "PowerState": "Always",
             "Index": 9,
             "Name": "Fan9",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -139,6 +280,20 @@
             "PowerState": "Always",
             "Index": 10,
             "Name": "Fan10",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {
@@ -150,6 +305,20 @@
             "PowerState": "Always",
             "Index": 11,
             "Name": "Fan11",
+            "Thresholds": [
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 600
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 1000
+                }
+            ],
             "Type": "I2CFan"
         },
         {

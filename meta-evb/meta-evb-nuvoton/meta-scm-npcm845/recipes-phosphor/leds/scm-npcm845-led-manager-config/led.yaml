@@ -13,7 +13,7 @@ caterr_led:
         Action: 'Blink'
         DutyOn: 50
 
-fan_out:
+fan_fault:
     blade_attention:
         Action: 'Blink'
         DutyOn: 50
