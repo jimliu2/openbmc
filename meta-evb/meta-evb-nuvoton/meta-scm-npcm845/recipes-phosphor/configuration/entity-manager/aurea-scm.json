@@ -2,9 +2,9 @@
     "Exposes": [
         {
             "Index": 0,
-            "EntityId": 6,
-            "EntityInstance": 1,
-            "Name": "P12V_STBY",
+            "EntityId": 7,
+            "EntityInstance": 6,
+            "Name": "P12V_AUX_SCM",
             "PowerState": "Always",
             "ScaleFactor": 0.13,
             "Thresholds": [
@@ -37,9 +37,9 @@
         },
         {
             "Index": 1,
-            "EntityId": 6,
-            "EntityInstance": 2,
-            "Name": "P5V_STBY",
+            "EntityId": 7,
+            "EntityInstance": 6,
+            "Name": "P5V_AUX_SCM",
             "PowerState": "Always",
             "ScaleFactor": 0.33,
             "Thresholds": [
@@ -72,9 +72,9 @@
         },
         {
             "Index": 2,
-            "EntityId": 6,
-            "EntityInstance": 3,
-            "Name": "P3V3_SCM_STBY",
+            "EntityId": 7,
+            "EntityInstance": 6,
+            "Name": "P3V3_AUX_SCM",
             "PowerState": "Always",
             "ScaleFactor": 0.5,
             "Thresholds": [
@@ -108,9 +108,9 @@
         {
             "Address": "0x48",
             "Bus": 15,
-            "EntityId": 6,
-            "EntityInstance": 4,
-            "Name": "SCM_Inlet_Temp",
+            "EntityId": 7,
+            "EntityInstance": 3,
+            "Name": "Temp_Inlet_SCM",
             "Thresholds": [
                 {
                     "Direction": "greater than",
