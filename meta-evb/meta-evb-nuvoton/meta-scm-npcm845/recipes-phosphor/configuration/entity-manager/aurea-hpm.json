@@ -852,7 +852,7 @@
             "temp2_Name": "Temp_PSU_INLET",
             "temp3_Name": "Temp_PSU_OUTLET",
             "Name": "PSU",
-            "Type": "pmbus"
+            "Type": "p2011"
         }
     ],
     "Name": "C2195",
