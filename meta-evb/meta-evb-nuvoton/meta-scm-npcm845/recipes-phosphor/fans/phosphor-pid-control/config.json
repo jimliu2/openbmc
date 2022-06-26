@@ -1,9 +1,9 @@
 {
     "sensors" : [
         {
-            "name": "Fan_0",
+            "name": "Fan_0A",
             "type": "fan",
-            "readPath": "/xyz/openbmc_project/sensors/fan_tach/Fan_0",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/Fan_0A",
             "writePath": "/sys/devices/platform/ahb/ahb:apb/f0084000.i2c/i2c-4/4-0020/hwmon/**/pwm1",
             "min": 0,
             "max": 255
@@ -26,9 +26,9 @@
             "failsafePercent": 100.0,
             "pids": [
                 {
-                    "name": "Fan_0",
+                    "name": "Fan_0A",
                     "type": "fan",
-                    "inputs": ["Fan_0"],
+                    "inputs": ["Fan_0A"],
                     "setpoint": 40.0,
                     "pid": {
                         "samplePeriod": 1.0,
