@@ -74,7 +74,6 @@
             "Type": "I2CFan"
         },
         {
-
             "Address": "0x23",
             "Bus": 4,
             "EntityId": "0x1D",
@@ -416,88 +415,89 @@
             "Bus": 7,
             "Name": "HSC0",
             "EntityId": "0xa",
+            "PowerState": "Off",
             "pin_Name": "HSC0 Input Power",
             "vin_Name": "HSC0 Input Volt",
             "iout1_Name": "HSC0 Output Curr",
-            "temp1_Name":"Temp HSC0",
+            "temp1_Name": "Temp HSC0",
             "Labels": [
                 "temp1",
                 "vin",
                 "pin",
                 "iout1"
-                ],
-                "Thresholds": [
-                    {
-                        "Direction": "greater than",
-                        "Label": "pin",
-                        "Name": "upper critical",
-                        "Severity": 1,
-                        "Value": 1350
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "pin",
-                        "Name": "upper non critical",
-                        "Severity": 0,
-                        "Value": 1300
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "iout1",
-                        "Name": "upper critical",
-                        "Severity": 1,
-                        "Value": 115
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "iout1",
-                        "Name": "upper non critical",
-                        "Severity": 0,
-                        "Value": 110
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "temp1",
-                        "Name": "upper critical",
-                        "Severity": 1,
-                        "Value": 103
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "temp1",
-                        "Name": "upper non critical",
-                        "Severity": 0,
-                        "Value": 100
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "vin",
-                        "Name": "upper critical",
-                        "Severity": 1,
-                        "Value": 13.5
-                    },
-                    {
-                        "Direction": "greater than",
-                        "Label": "vin",
-                        "Name": "upper non critical",
-                        "Severity": 0,
-                        "Value": 13
-                    },
-                    {
-                        "Direction": "less than",
-                        "Label": "vin",
-                        "Name": "lower critical",
-                        "Severity": 1,
-                        "Value": 10.5
-                    },
-                    {
-                        "Direction": "less than",
-                        "Label": "vin",
-                        "Name": "lower non critical",
-                        "Severity": 0,
-                        "Value": 11
-                    }
-                ],
+            ],
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Label": "pin",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 1350
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pin",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 1300
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 115
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 110
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "temp1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 103
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "temp1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 100
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vin",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 13.5
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vin",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 13
+                },
+                {
+                    "Direction": "less than",
+                    "Label": "vin",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Value": 10.5
+                },
+                {
+                    "Direction": "less than",
+                    "Label": "vin",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Value": 11
+                }
+            ],
             "Type": "ADM1278"
         },
         {
@@ -505,7 +505,7 @@
             "EntityId": 7,
             "EntityInstance": 6,
             "Name": "P12V_AUX_HPM",
-            "PowerState": "Always",
+            "PowerState": "Off",
             "ScaleFactor": 0.112,
             "Thresholds": [
                 {
@@ -540,7 +540,7 @@
             "EntityId": 7,
             "EntityInstance": 7,
             "Name": "P5V_AUX_HPM",
-            "PowerState": "Always",
+            "PowerState": "Off",
             "ScaleFactor": 0.272,
             "Thresholds": [
                 {
@@ -575,7 +575,7 @@
             "EntityId": 7,
             "EntityInstance": 8,
             "Name": "P3V3_AUX_HPM",
-            "PowerState": "Always",
+            "PowerState": "Off",
             "ScaleFactor": 0.417,
             "Thresholds": [
                 {
@@ -619,7 +619,6 @@
                 }
             ],
             "Thresholds": [
-
                 {
                     "Direction": "greater than",
                     "Name": "upper critical",
@@ -722,7 +721,7 @@
             "EntityId": "0x2d",
             "EntityInstance": 3,
             "Name": "P1V8_AUX_HPM",
-            "PowerState": "Always",
+            "PowerState": "Off",
             "ScaleFactor": 1,
             "Thresholds": [
                 {
@@ -756,6 +755,7 @@
             "Address": "0x61",
             "Bus": 3,
             "Labels": [
+                "temp1",
                 "vout1",
                 "vout2",
                 "pout1",
@@ -763,6 +763,129 @@
                 "iout1",
                 "iout2"
             ],
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Label": "temp1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 100
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 2.3
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 2.2
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Label": "vout1",
+                    "Value": 0.35
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Label": "vout1",
+                    "Value": 0.3
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout2",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 1.45
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout2",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 1.35
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Label": "vout2",
+                    "Value": 0.6
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Label": "vout2",
+                    "Value": 0.5
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 208
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 194
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout2",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 221
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout2",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 195
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout2",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 197
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout2",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                }
+            ],
+            "PowerState": "On",
+            "temp1_Name": "Temp_VR_0",
             "vout1_Name": "P0_CORE_0_RUN",
             "vout2_Name": "P0_SOC_RUN",
             "pout1_Name": "VR_CORE_0_PWR",
@@ -776,6 +899,7 @@
             "Address": "0x62",
             "Bus": 3,
             "Labels": [
+                "temp1",
                 "vout1",
                 "vout2",
                 "pout1",
@@ -783,6 +907,129 @@
                 "iout1",
                 "iout2"
             ],
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Label": "temp1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 100
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 2.3
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 2.2
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Label": "vout1",
+                    "Value": 0.35
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Label": "vout1",
+                    "Value": 0.3
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout2",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 1.45
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout2",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 1.35
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Label": "vout2",
+                    "Value": 0.6
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Label": "vout2",
+                    "Value": 0.5
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 208
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 194
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout2",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 221
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout2",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 195
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout2",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 197
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout2",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                }
+            ],
+            "PowerState": "On",
+            "temp1_Name": "Temp_VR_1",
             "vout1_Name": "P0_CORE_1_RUN",
             "vout2_Name": "P0_VDDIO_RUN",
             "pout1_Name": "VR_CORE_1_PWR",
@@ -800,6 +1047,65 @@
                 "pout1",
                 "iout1"
             ],
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Label": "vout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 1.2
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "vout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 1.115
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower non critical",
+                    "Severity": 0,
+                    "Label": "vout1",
+                    "Value": 1.05
+                },
+                {
+                    "Direction": "less than",
+                    "Name": "lower critical",
+                    "Severity": 1,
+                    "Label": "vout1",
+                    "Value": 1
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 221
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "pout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 197
+                },
+                {
+                    "Direction": "greater than",
+                    "Label": "iout1",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 192
+                }
+            ],
+            "PowerState": "On",
             "vout1_Name": "P0_11_SUS",
             "pout1_Name": "VR_SUS_PWR",
             "iout1_Name": "VR_SUS_CUR",
@@ -810,16 +1116,17 @@
             "Address": "0x58",
             "Bus": 7,
             "Labels": [
-                "Fan_0B",
-                "Fan_1A",
-                "Fan_1B",
+                "fan1",
+                "fan2",
+                "fan3",
                 "temp1",
                 "temp2",
                 "temp3"
             ],
-            "Fan_1_Name": "Fan_PSU_1",
-            "Fan_2_Name": "Fan_PSU_2",
-            "Fan_3_Name": "Fan_PSU_3",
+            "PowerState": "On",
+            "fan1_Name": "Fan_PSU_1",
+            "fan2_Name": "Fan_PSU_2",
+            "fan3_Name": "Fan_PSU_3",
             "temp1_Name": "Temp_PSU_HOTSPOT",
             "temp2_Name": "Temp_PSU_INLET",
             "temp3_Name": "Temp_PSU_OUTLET",
