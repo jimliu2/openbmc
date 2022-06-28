@@ -6,7 +6,6 @@
 # Copyright (C) 2022 Nuvoton Technologies, All Rights Reserved
 #======================================== -->
 
-
 <Bin_Ecc_Map>
 	<!-- BMC mandatory fields -->
 	<ImageProperties>
@@ -170,20 +169,19 @@
 
 	<BinField>
 		<!-- MC_CONFIG. 
-			Bit 0: ECC enable (0x01)
+			Bit 0: MC_CAPABILITY_ECC_EN (0x01)
 			Bit 2: Select DRAM type. 
 				0: 1600 DRAM type clk.
 				1: 2133 DRAM type clk.
 			Bit 3: enable 3 seconds delay.
 			Bit 4: enable debug sweeps (in addition to sweep_debug)
-			Bit 5: enable prints during MC training
 			 -->
 		<name>MC_CONFIG</name>          
 		<config>
 			<offset>0x134</offset>       
 			<size>0x1</size> 
 		</config>
-		<content format='32bit'>0x24</content>  
+		<content format='32bit'>0x04</content>  
 	</BinField>
 	
 
