@@ -324,6 +324,16 @@
             "Type": "I2CFan"
         },
         {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110000",
+            "Class": "NA",
+            "EntityId": "0x20",
+            "EntityInstance": 0,
+            "Name": "Temp_DIMM",
+            "Type": "SPD5118"
+        },
+        {
             "Address": "0x4B",
             "Bus": 4,
             "EntityId": 7,
@@ -1161,6 +1171,78 @@
                 }
             ],
             "Type": "STBSI"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "36",
+            "Name": "M2_S1",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "37",
+            "Name": "M2_S2",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "20",
+            "Name": "E1_S1",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "21",
+            "Name": "E1_S2",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "22",
+            "Name": "E1_S3",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "23",
+            "Name": "E1_S4",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "24",
+            "Name": "E1_S5",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "28",
+            "Name": "E1_S6",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "29",
+            "Name": "E1_S7",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "30",
+            "Name": "E1_S8",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "31",
+            "Name": "E1_S9",
+            "Type": "NVME1000"
+        },
+        {
+            "Address": "0x6a",
+            "Bus": "32",
+            "Name": "E1_S10",
+            "Type": "NVME1000"
         }
     ],
     "Name": "C2195",

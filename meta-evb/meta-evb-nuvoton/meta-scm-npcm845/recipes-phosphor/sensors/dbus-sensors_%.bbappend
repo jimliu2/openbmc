@@ -7,3 +7,14 @@ SRC_URI:append:scm-npcm845 = " \
     file://0004-psu-sensor-support-p2011-psu.patch \
     file://0005-hwmontemp-add-adm-stbsi-support.patch \
     "
+
+PACKAGECONFIG:scm-npcm845 = "\
+    hwmontempsensor \
+    fansensor \
+    psusensor \
+    adcsensor \
+    intrusionsensor \
+    nvmesensor \
+    "
+
+SYSTEMD_SERVICE:${PN} += "xyz.openbmc_project.nvmesensor.service"
