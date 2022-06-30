@@ -324,6 +324,258 @@
             "Type": "I2CFan"
         },
         {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc51110000",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x00",
+            "Name": "Temp_DIMM_A",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc51110001",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x01",
+            "Name": "Temp_DIMM_B",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc51110002",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x02",
+            "Name": "Temp_DIMM_C",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc51110003",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x03",
+            "Name": "Temp_DIMM_D",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc51110004",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x04",
+            "Name": "Temp_DIMM_E",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc51110005",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x05",
+            "Name": "Temp_DIMM_F",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110000",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x06",
+            "Name": "Temp_DIMM_G",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110001",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x07",
+            "Name": "Temp_DIMM_H",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110002",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x08",
+            "Name": "Temp_DIMM_I",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110003",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x09",
+            "Name": "Temp_DIMM_J",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110004",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x0a",
+            "Name": "Temp_DIMM_K",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc51110005",
+            "Class": "temperature",
+            "EntityId": "0x20",
+            "EntityInstance": "0x0b",
+            "Name": "Temp_DIMM_L",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc89000000",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x0c",
+            "Name": "Voltage_DIMM_A",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc89000001",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x0d",
+            "Name": "Voltage_DIMM_B",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc89000002",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x0e",
+            "Name": "Voltage_DIMM_C",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc89000003",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x0f",
+            "Name": "Voltage_DIMM_D",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc89000004",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x10",
+            "Name": "Voltage_DIMM_E",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 2,
+            "Reg": "0x31",
+            "Pid": "4cc89000005",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x11",
+            "Name": "Voltage_DIMM_F",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc89000000",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x12",
+            "Name": "Voltage_DIMM_G",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc89000001",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x13",
+            "Name": "Voltage_DIMM_H",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc89000002",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x14",
+            "Name": "Voltage_DIMM_I",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc89000003",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x15",
+            "Name": "Voltage_DIMM_J",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc89000004",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x16",
+            "Name": "Voltage_DIMM_K",
+            "Type": "dimm"
+        },
+        {
+            "Bus": 3,
+            "Reg": "0x31",
+            "Pid": "4cc89000005",
+            "Class": "voltage",
+            "Adc": 8,
+            "EntityId": "0x20",
+            "EntityInstance": "0x17",
+            "Name": "Voltage_DIMM_L",
+            "Type": "dimm"
+        },
+        {
             "Bus": 3,
             "Reg": "0x31",
             "Pid": "4cc51110000",
