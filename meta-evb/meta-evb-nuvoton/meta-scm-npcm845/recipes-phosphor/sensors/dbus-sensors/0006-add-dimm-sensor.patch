@@ -1,0 +1,598 @@
+From 1ecaf705692e9b5d299a9f5255c1167d270dd30f Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Tue, 28 Jun 2022 10:06:01 +0800
+Subject: [PATCH] add dimm sensor
+
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
+---
+ include/DIMMSensor.hpp |  44 ++++
+ include/i3cdev.h       |  39 ++++
+ meson_options.txt      |   1 +
+ src/DIMMSensor.cpp     | 445 +++++++++++++++++++++++++++++++++++++++++
+ src/meson.build        |  15 ++
+ 5 files changed, 544 insertions(+)
+ create mode 100644 include/DIMMSensor.hpp
+ create mode 100644 include/i3cdev.h
+ create mode 100644 src/DIMMSensor.cpp
+
+diff --git a/include/DIMMSensor.hpp b/include/DIMMSensor.hpp
+new file mode 100644
+index 0000000..0fefd93
+--- /dev/null
++++ b/include/DIMMSensor.hpp
+@@ -0,0 +1,44 @@
++#pragma once
++#include <boost/asio/deadline_timer.hpp>
++#include <boost/container/flat_map.hpp>
++#include <sensor.hpp>
++
++#include <chrono>
++#include <limits>
++#include <memory>
++#include <string>
++#include <vector>
++
++struct DIMMSensor : public Sensor
++{
++    DIMMSensor(std::shared_ptr<sdbusplus::asio::connection>& conn,
++                  boost::asio::io_service& io, const std::string& name,
++                  const std::string& sensorType,
++                  const std::string& sensorConfiguration,
++                  sdbusplus::asio::object_server& objectServer,
++                  std::vector<thresholds::Threshold>&& thresholds,
++                  uint8_t busId, const std::string& pid, uint8_t tempReg,
++                  double max, double min, uint8_t adcSel);
++    ~DIMMSensor() override;
++
++    void checkThresholds(void) override;
++    void read(void);
++    void init(void);
++
++    uint8_t busId;
++    std::string pid;
++    uint8_t tempReg;
++    std::string sensorName;
++    std::string sensorType;
++    uint8_t adcSel;
++    double adcScal;
++
++  private:
++    int getDIMMRegsInfo(uint8_t regs, uint8_t *data, uint8_t len);
++    double convertTempRaw(uint8_t low, uint8_t high);
++    double convertVoltRaw(uint8_t raw);
++    int enableADC(void);
++    int probe(uint8_t reg);
++    sdbusplus::asio::object_server& objectServer;
++    boost::asio::deadline_timer waitTimer;
++};
+diff --git a/include/i3cdev.h b/include/i3cdev.h
+new file mode 100644
+index 0000000..7b8d429
+--- /dev/null
++++ b/include/i3cdev.h
+@@ -0,0 +1,39 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2019 Synopsys, Inc. and/or its affiliates.
++ *
++ * Author: Vitor Soares <vitor.soares@synopsys.com>
++ */
++
++#ifndef _UAPI_I3C_DEV_H_
++#define _UAPI_I3C_DEV_H_
++
++#include <linux/types.h>
++#include <linux/ioctl.h>
++
++#define VERSION "0.1"
++
++/* IOCTL commands */
++#define I3C_DEV_IOC_MAGIC	0x07
++
++/**
++ * struct i3c_ioc_priv_xfer - I3C SDR ioctl private transfer
++ * @data: Holds pointer to userspace buffer with transmit data.
++ * @len: Length of data buffer buffers, in bytes.
++ * @rnw: encodes the transfer direction. true for a read, false for a write
++ */
++struct i3c_ioc_priv_xfer {
++	__u64 data;
++	__u16 len;
++	__u8 rnw;
++	__u8 pad[5];
++};
++
++#define I3C_PRIV_XFER_SIZE(N)	\
++	((((sizeof(struct i3c_ioc_priv_xfer)) * (N)) < (1 << _IOC_SIZEBITS)) \
++	? ((sizeof(struct i3c_ioc_priv_xfer)) * (N)) : 0)
++
++#define I3C_IOC_PRIV_XFER(N)	\
++	_IOC(_IOC_READ|_IOC_WRITE, I3C_DEV_IOC_MAGIC, 30, I3C_PRIV_XFER_SIZE(N))
++
++#endif
+diff --git a/meson_options.txt b/meson_options.txt
+index ea0302d..93f2972 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -13,3 +13,4 @@ option('external', type: 'feature', value: 'enabled', description: 'Enable Exter
+ option('tests', type: 'feature', value: 'enabled', description: 'Build tests.',)
+ option('validate-unsecure-feature', type : 'feature', value : 'disabled', description : 'Enables unsecure features required by validation. Note: mustbe turned off for production images.',)
+ option('insecure-sensor-override', type : 'feature', value : 'disabled', description : 'Enables Sensor override feature without any check.',)
++option('dimm', type: 'feature', value: 'enabled', description: 'Enable DIMM sensor.',)
+diff --git a/src/DIMMSensor.cpp b/src/DIMMSensor.cpp
+new file mode 100644
+index 0000000..2c5be44
+--- /dev/null
++++ b/src/DIMMSensor.cpp
+@@ -0,0 +1,445 @@
++#include <DIMMSensor.hpp>
++#include <Utils.hpp>
++#include <VariantVisitors.hpp>
++#include <boost/algorithm/string/predicate.hpp>
++#include <boost/container/flat_map.hpp>
++#include <sdbusplus/asio/connection.hpp>
++#include <sdbusplus/asio/object_server.hpp>
++#include <sdbusplus/bus/match.hpp>
++
++#include <chrono>
++#include <cmath>
++#include <functional>
++#include <iostream>
++#include <limits>
++#include <memory>
++#include <numeric>
++#include <string>
++#include <vector>
++
++extern "C"
++{
++#include <i3cdev.h>
++}
++
++constexpr const bool debug = false;
++
++constexpr const char* configInterface =
++    "xyz.openbmc_project.Configuration.dimm";
++
++boost::container::flat_map<std::string, std::unique_ptr<DIMMSensor>> sensors;
++
++DIMMSensor::DIMMSensor(std::shared_ptr<sdbusplus::asio::connection>& conn,
++                             boost::asio::io_service& io,
++                             const std::string& sensorName,
++                             const std::string& sensorType,
++                             const std::string& sensorConfiguration,
++                             sdbusplus::asio::object_server& objectServer,
++                             std::vector<thresholds::Threshold>&& thresholdData,
++                             uint8_t busId, const std::string& pid,
++                             uint8_t tempReg, double max, double min, uint8_t adcSel) :
++    Sensor(escapeName(sensorName), std::move(thresholdData),
++           sensorConfiguration, sensorType,
++           false, false, max, min, conn),
++    busId(busId), pid(pid), tempReg(tempReg), sensorName(sensorName), sensorType(sensorType),
++    adcSel(adcSel), objectServer(objectServer), waitTimer(io)
++{
++    std::string dbusPath = "/xyz/openbmc_project/sensors/" + sensorType + "/" + name;
++
++    sensorInterface = objectServer.add_interface(
++        dbusPath,
++        "xyz.openbmc_project.Sensor.Value");
++
++    if (thresholds::hasWarningInterface(thresholds))
++    {
++        thresholdInterfaceWarning = objectServer.add_interface(
++            dbusPath,
++            "xyz.openbmc_project.Sensor.Threshold.Warning");
++    }
++    if (thresholds::hasCriticalInterface(thresholds))
++    {
++        thresholdInterfaceCritical = objectServer.add_interface(
++            dbusPath,
++            "xyz.openbmc_project.Sensor.Threshold.Critical");
++    }
++    association = objectServer.add_interface(
++        dbusPath,
++        association::interface);
++}
++
++DIMMSensor::~DIMMSensor()
++{
++    waitTimer.cancel();
++    objectServer.remove_interface(thresholdInterfaceWarning);
++    objectServer.remove_interface(thresholdInterfaceCritical);
++    objectServer.remove_interface(sensorInterface);
++    objectServer.remove_interface(association);
++}
++
++void DIMMSensor::init(void)
++{
++    if (sensorType == "temperature")
++    {
++        if (probe(0x0) == -1)
++        {
++            sensors.erase(sensorName);
++            return;
++        }
++        setInitialProperties(dbusConnection, sensor_paths::unitDegreesC);
++    } else if (sensorType == "voltage")
++    {
++        if (probe(0x3c) == -1)
++        {
++            sensors.erase(sensorName);
++            return;
++        }
++        setInitialProperties(dbusConnection, sensor_paths::unitVolts);
++        if (enableADC() == -1)
++        {
++            sensors.erase(sensorName);
++            return;
++        }
++    } else {
++        sensors.erase(sensorName);
++        return;
++    }
++    read();
++}
++
++void DIMMSensor::checkThresholds(void)
++{
++    thresholds::checkThresholds(this);
++}
++
++int DIMMSensor::probe(uint8_t reg)
++{
++    uint8_t val = 0;
++
++    int ret = getDIMMRegsInfo(reg, &val, 1);
++    if (ret < 0)
++    {
++        std::cerr << "fail to probe device: " << sensorName << "\n";
++        return -1;
++    }
++    if (0 == (int)val)
++    {
++        std::cerr << "device is not present: " << sensorName << "\n";
++        return -1;
++    }
++
++    return 0;
++}
++
++int DIMMSensor::enableADC(void)
++{
++    std::string i3cBus = "/dev/i3c-" + std::to_string(busId) + "-" + pid;
++    i3c_ioc_priv_xfer xfer;
++    uint8_t buf[2];
++    uint8_t val;
++#if 0
++    int ret = getDIMMRegsInfo(0x30, &val, 1);
++    if (ret < 0)
++    {
++        std::cerr << " unable to read register 0x30" << "\n";
++        return -1;
++    }
++#endif
++    if (adcSel == 5) {
++        adcScal = 0.07;
++    } else if (adcSel == 7) {
++        adcScal = 0.025;
++    } else if (adcSel == 0 || adcSel == 1 || adcSel == 2 || adcSel == 3
++             || adcSel == 6 || adcSel == 8 || adcSel == 9) {
++        adcScal = 0.015;
++    } else {
++        adcSel = 0;
++        adcScal = 0.015;
++    }
++    std::cerr << sensorName << ": adc Select = " << (int)adcSel << "\n";
++    std::cerr << sensorName << ": adc Read scale = " << adcScal << "\n";
++
++    val = 0x80 | (adcSel << 3);
++
++    int fd = open(i3cBus.c_str(), O_RDWR);
++    if (fd < 0)
++    {
++        std::cerr << " unable to open i3c device" << i3cBus << "  err=" << fd
++                  << "\n";
++        return -1;
++    }
++
++    buf[0] = 0x30;
++    buf[1] = val | 0x80;
++    xfer.len = 2;
++    xfer.rnw = 0;
++    xfer.data = (__u64)buf;
++    if (ioctl(fd, I3C_IOC_PRIV_XFER(1), &xfer) < 0) {
++        std::cerr << "Error: transfer failed: " << i3cBus << "\n";
++        return -1;
++    }
++
++    close(fd);
++
++    return 0;
++}
++
++int DIMMSensor::getDIMMRegsInfo(uint8_t regs, uint8_t *data, uint8_t len)
++{
++    std::string i3cBus = "/dev/i3c-" + std::to_string(busId) + "-" + pid;
++    i3c_ioc_priv_xfer xfers[2];
++    uint8_t wbuf[2];
++    uint8_t rbuf[32];
++
++    if (len > 32)
++        return -1;
++
++    int fd = open(i3cBus.c_str(), O_RDWR);
++    if (fd < 0)
++    {
++        std::cerr << "unable to open i3c bus " << i3cBus << "  err=" << fd
++                  << "\n";
++        return -1;
++    }
++
++    wbuf[0] = regs;
++    for (int i = 0; i < len; i++)
++    {
++        rbuf[i] = 0;
++    }
++    xfers[0].len = 1;
++    xfers[0].rnw = 0;
++    xfers[0].data = (__u64)wbuf;
++    xfers[1].len = len;
++    xfers[1].rnw = 1;
++    xfers[1].data = (__u64)rbuf;
++    if (ioctl(fd, I3C_IOC_PRIV_XFER(2), xfers) < 0) {
++        std::cerr << "Error: transfer failed: " << i3cBus << "\n";
++        return -1;
++    }
++
++    int i;
++    for (i = 0; i < len; i++)
++    {
++        if constexpr (debug)
++        {
++            std::cerr << "Raw reading: "  << static_cast<int>(rbuf[i]) << "\n";
++        }
++        *data = rbuf[i];
++        data++;
++    }
++
++    close(fd);
++
++    return 0;
++}
++
++double DIMMSensor::convertTempRaw(uint8_t low, uint8_t high)
++{
++    double v = static_cast<double>(low >> 2) * 0.25;
++    v += static_cast<double>(high & 0x0F) * 16;
++    if (high & 0x10) v = v * -1;
++
++    return v;
++}
++
++double DIMMSensor::convertVoltRaw(uint8_t raw)
++{
++    double v = static_cast<double>(raw) * adcScal;
++    return v;
++}
++
++void DIMMSensor::read(void)
++{
++    static constexpr size_t pollTime = 1; // in seconds
++
++    waitTimer.expires_from_now(boost::posix_time::seconds(pollTime));
++    waitTimer.async_wait([this](const boost::system::error_code& ec) {
++        if (ec == boost::asio::error::operation_aborted)
++        {
++            return; // we're being cancelled
++        }
++        // read timer error
++        if (ec)
++        {
++            std::cerr << "timer error\n";
++            return;
++        }
++        if (sensorType == "temperature")
++        {
++            uint8_t rawVal[2];
++            int ret = getDIMMRegsInfo(tempReg, rawVal, 2);
++            if (ret >= 0)
++            {
++                double v = convertTempRaw(rawVal[0], rawVal[1]);
++                if constexpr (debug)
++                {
++                    std::cerr << sensorName << ":update temp to " << v << "\n";
++                }
++                updateValue(v);
++            }
++        } else if (sensorType == "voltage")
++        {
++            uint8_t rawVal;
++            int ret = getDIMMRegsInfo(tempReg, &rawVal, 1);
++            if (ret >= 0)
++            {
++                double v = convertVoltRaw(rawVal);
++                if constexpr (debug)
++                {
++                    std::cerr << sensorName << ":update voltage to " << v << "\n";
++                }
++                updateValue(v);
++            }
++        }
++
++        read();
++    });
++}
++
++void createSensors(
++    boost::asio::io_service& io, sdbusplus::asio::object_server& objectServer,
++    boost::container::flat_map<std::string, std::unique_ptr<DIMMSensor>>&
++        sensors,
++    std::shared_ptr<sdbusplus::asio::connection>& dbusConnection)
++{
++    if (!dbusConnection)
++    {
++        std::cerr << "Connection not created\n";
++        return;
++    }
++
++    dbusConnection->async_method_call(
++        [&io, &objectServer, &dbusConnection, &sensors](
++            boost::system::error_code ec, const ManagedObjectType& resp) {
++            if (ec)
++            {
++                std::cerr << "Error contacting entity manager\n";
++                return;
++            }
++            for (const auto& pathPair : resp)
++            {
++                for (const auto& entry : pathPair.second)
++                {
++                    if (entry.first != configInterface)
++                    {
++                        continue;
++                    }
++                    std::string name =
++                        loadVariant<std::string>(entry.second, "Name");
++
++                    std::vector<thresholds::Threshold> sensorThresholds;
++                    if (!parseThresholdsFromConfig(pathPair.second,
++                                                   sensorThresholds))
++                    {
++                        std::cerr << "error populating thresholds for " << name
++                                  << "\n";
++                    }
++
++                    uint8_t busId = loadVariant<uint8_t>(entry.second, "Bus");
++
++                    std::string pid =
++                        loadVariant<std::string>(entry.second, "Pid");
++
++                    uint8_t tempReg = loadVariant<uint8_t>(entry.second, "Reg");
++
++                    std::string sensorType =
++                        loadVariant<std::string>(entry.second, "Class");
++                    double max, min;
++		    uint8_t adcSel = 0;
++                    if (sensorType == "temperature")
++                    {
++                        max = 255;
++                        min = -255;
++                    } else if (sensorType == "voltage")
++                    {
++                        max = 15;
++                        min = 0;
++                        auto findType = entry.second.find("Adc");
++                        if (findType != entry.second.end())
++                        {
++                            adcSel = loadVariant<uint8_t>(entry.second, "Adc");
++                        }
++
++                    } else {
++                        std::cerr << "error sensor type: " << sensorType
++                                  << "\n";
++                        continue;
++                    }
++
++                    if constexpr (debug)
++                    {
++                        std::cerr
++                            << "Configuration parsed for \n\t" << entry.first
++                            << "\n"
++                            << "with\n"
++                            << "\tName: " << name << "\n"
++                            << "\tBus: " << static_cast<int>(busId) << "\n"
++                            << "\tPid: " << pid << "\n"
++                            << "\n"
++                            << "\tReg: " << static_cast<int>(tempReg) << "\n"
++                            << "\tClass: " << sensorType << "\n";
++                    }
++
++                    auto& sensor = sensors[name];
++
++                    sensor = std::make_unique<DIMMSensor>(
++                        dbusConnection, io, name, sensorType, pathPair.first, objectServer,
++                        std::move(sensorThresholds), busId, pid,
++                        tempReg, max, min, adcSel);
++
++                    sensor->init();
++                }
++            }
++        },
++        entityManagerName, "/", "org.freedesktop.DBus.ObjectManager",
++        "GetManagedObjects");
++}
++
++int main()
++{
++    boost::asio::io_service io;
++    auto systemBus = std::make_shared<sdbusplus::asio::connection>(io);
++    systemBus->request_name("xyz.openbmc_project.DIMMSensor");
++    sdbusplus::asio::object_server objectServer(systemBus);
++
++    io.post([&]() { createSensors(io, objectServer, sensors, systemBus); });
++
++    boost::asio::deadline_timer configTimer(io);
++
++    std::function<void(sdbusplus::message::message&)> eventHandler =
++        [&](sdbusplus::message::message&) {
++            configTimer.expires_from_now(boost::posix_time::seconds(1));
++            // create a timer because normally multiple properties change
++            configTimer.async_wait([&](const boost::system::error_code& ec) {
++                if (ec == boost::asio::error::operation_aborted)
++                {
++                    return; // we're being canceled
++                }
++                // config timer error
++                if (ec)
++                {
++                    std::cerr << "timer error\n";
++                    return;
++                }
++                createSensors(io, objectServer, sensors, systemBus);
++                if (sensors.empty())
++                {
++                    std::cout << "Configuration not detected\n";
++                }
++            });
++        };
++
++    sdbusplus::bus::match::match configMatch(
++        static_cast<sdbusplus::bus::bus&>(*systemBus),
++        "type='signal',member='PropertiesChanged',"
++        "path_namespace='" +
++            std::string(inventoryPath) +
++            "',"
++            "arg0namespace='" +
++            configInterface + "'",
++        eventHandler);
++
++    setupManufacturingModeMatch(*systemBus);
++    io.run();
++    return 0;
++}
+diff --git a/src/meson.build b/src/meson.build
+index d2535e2..03fc95c 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -193,3 +193,18 @@ if get_option('external').enabled()
+         install: true,
+     )
+ endif
++
++if get_option('dimm').enabled()
++    executable(
++        'dimmsensor',
++        'DIMMSensor.cpp',
++        dependencies: [
++            default_deps,
++            thresholds_dep,
++            utils_dep,
++        ],
++        implicit_include_directories: false,
++        include_directories: '../include',
++        install: true,
++    )
++endif
+-- 
+2.17.1
+
