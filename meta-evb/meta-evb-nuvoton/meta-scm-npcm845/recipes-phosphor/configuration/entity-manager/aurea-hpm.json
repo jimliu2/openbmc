@@ -331,6 +331,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x00",
             "Name": "Temp_DIMM_A",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -341,6 +355,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x01",
             "Name": "Temp_DIMM_B",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -351,6 +379,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x02",
             "Name": "Temp_DIMM_C",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -361,6 +403,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x03",
             "Name": "Temp_DIMM_D",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -371,6 +427,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x04",
             "Name": "Temp_DIMM_E",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -381,6 +451,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x05",
             "Name": "Temp_DIMM_F",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -391,6 +475,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x06",
             "Name": "Temp_DIMM_G",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -401,6 +499,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x07",
             "Name": "Temp_DIMM_H",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -411,6 +523,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x08",
             "Name": "Temp_DIMM_I",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -421,6 +547,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x09",
             "Name": "Temp_DIMM_J",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -431,6 +571,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x0a",
             "Name": "Temp_DIMM_K",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
@@ -441,6 +595,20 @@
             "EntityId": "0x20",
             "EntityInstance": "0x0b",
             "Name": "Temp_DIMM_L",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 85.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 83.000
+                }
+            ],
             "Type": "dimm"
         },
         {
