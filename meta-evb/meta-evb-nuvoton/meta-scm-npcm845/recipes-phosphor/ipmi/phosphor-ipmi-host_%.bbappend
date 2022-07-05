@@ -17,10 +17,6 @@ SRC_URI:append:scm-npcm845 = " file://0007-dbus-sdr-storagecommands-Add-option-t
 SRC_URI:append:scm-npcm845 = " file://0008-Add-sensor-type-command.patch"
 SRC_URI:append:scm-npcm845 = " file://0009-implement-warm-reset-command.patch"
 
-# Fixed ipmid crashing in 64bit system, an alternative solution is still in upstream reviewing
-# https://gerrit.openbmc-project.xyz/c/openbmc/phosphor-host-ipmid/+/44260
-SRC_URI:append:scm-npcm845 = " file://0001-phosphor-ipmi-host-Do-not-use-size_t-in-struct-MetaP.patch"
-
 # Add send/get message support
 # ipmid <-> ipmb <-> i2c
 SRC_URI:append:scm-npcm845 = " file://0002-Support-bridging-commands.patch"
