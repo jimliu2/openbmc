@@ -15,6 +15,7 @@ SRC_URI:append:scm-npcm845 = " file://0004-Add-SEL-add-command.patch"
 SRC_URI:append:scm-npcm845 = " file://0006-Correct-IPMI-firmware-revision-report.patch"
 SRC_URI:append:scm-npcm845 = " file://0007-dbus-sdr-storagecommands-Add-option-to-use-Clear-met.patch"
 SRC_URI:append:scm-npcm845 = " file://0008-Add-sensor-type-command.patch"
+SRC_URI:append:scm-npcm845 = " file://0009-implement-warm-reset-command.patch"
 
 # Fixed ipmid crashing in 64bit system, an alternative solution is still in upstream reviewing
 # https://gerrit.openbmc-project.xyz/c/openbmc/phosphor-host-ipmid/+/44260
@@ -29,3 +30,13 @@ PACKAGECONFIG:append:scm-npcm845 = " ${@entity_enabled(d, 'dynamic-sensors', '')
 # avoid build error after remove ipmi-fru
 WHITELIST_CONF:scm-npcm845 = "${S}/host-ipmid-whitelist.conf"
 
+# support ipmi warm reset
+FILES:${PN}:append:scm-npcm845 = " ${systemd_system_unitdir}/phosphor-ipmi-host.service.d/ipmi-warm-reset.conf"
+SRC_URI:append:scm-npcm845 = " file://ipmi-warm-reset.conf"
+SYSTEMD_SERVICE:${PN}:append:scm-npcm845 = " phosphor-ipmi-warm-reset.target"
+
+do_install:append:scm-npcm845() {
+        install -d ${D}${systemd_system_unitdir}/phosphor-ipmi-host.service.d
+        install -m 0644 ${WORKDIR}/ipmi-warm-reset.conf \
+                        ${D}${systemd_system_unitdir}/phosphor-ipmi-host.service.d/ipmi-warm-reset.conf
+}
