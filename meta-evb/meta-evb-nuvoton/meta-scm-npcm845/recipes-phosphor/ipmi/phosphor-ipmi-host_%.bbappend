@@ -16,6 +16,7 @@ SRC_URI:append:scm-npcm845 = " file://0006-Correct-IPMI-firmware-revision-report
 SRC_URI:append:scm-npcm845 = " file://0007-dbus-sdr-storagecommands-Add-option-to-use-Clear-met.patch"
 SRC_URI:append:scm-npcm845 = " file://0008-Add-sensor-type-command.patch"
 SRC_URI:append:scm-npcm845 = " file://0009-implement-warm-reset-command.patch"
+SRC_URI:append:scm-npcm845 = " file://0010-get-system-guid-command.patch"
 
 # Add send/get message support
 # ipmid <-> ipmb <-> i2c
