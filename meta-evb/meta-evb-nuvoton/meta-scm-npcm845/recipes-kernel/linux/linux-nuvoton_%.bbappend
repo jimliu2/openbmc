@@ -6,5 +6,4 @@ SRC_URI:append:scm-npcm845 = " file://0002-pinctrl-npcm8xx-correct-gpio190-setti
 SRC_URI:append:scm-npcm845 = " file://0003-net-phy-realtek-add-soft_reset.patch"
 SRC_URI:append:scm-npcm845 = " file://0004-kernel-scm-dts.patch"
 SRC_URI:append:scm-npcm845 = " file://0005-p2011-skip-status-check.patch"
-SRC_URI:append:scm-npcm845 = " file://0006-update-nct3018.patch"
 SRC_URI:append:scm-npcm845 = " file://0007-hwmon-sbtsi-Add-basic-support-for-SB-TSI-sensors.patch"
