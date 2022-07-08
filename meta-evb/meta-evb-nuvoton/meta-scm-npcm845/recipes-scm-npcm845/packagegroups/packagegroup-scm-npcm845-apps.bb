@@ -70,4 +70,5 @@ RDEPENDS:${PN}-system = " \
         update-psu \
         scm-boot-status-led \
         cpu-err \
+        dhcp-check \
         "
