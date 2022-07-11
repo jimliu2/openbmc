@@ -71,4 +71,5 @@ RDEPENDS:${PN}-system = " \
         scm-boot-status-led \
         cpu-err \
         dhcp-check \
+        phosphor-virtual-sensor \
         "
