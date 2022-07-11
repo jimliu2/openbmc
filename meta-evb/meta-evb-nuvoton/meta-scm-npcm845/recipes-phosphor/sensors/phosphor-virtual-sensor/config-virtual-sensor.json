@@ -1,7 +1,7 @@
 [
     {
         "Desc": {
-            "Name": "Temp_M.2_High",
+            "Name": "TempM2_High",
             "SensorType": "temperature",
             "MaxValue": 127.0,
             "MinValue": -128.0
@@ -46,7 +46,7 @@
     },
     {
         "Desc": {
-            "Name": "Temp_E1.S_High",
+            "Name": "TempE1S_High",
             "SensorType": "temperature",
             "MaxValue": 127.0,
             "MinValue": -128.0
