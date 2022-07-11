@@ -10,7 +10,7 @@ EXTRA_OECONF:append:scm-npcm845 = " --disable-i2c-whitelist-check"
 EXTRA_OECONF:append:scm-npcm845 = " --enable-sel_logger_clears_sel"
 
 SRC_URI:append:scm-npcm845 = " file://0001-Add-set-BIOS-version-support.patch"
-SRC_URI:append:scm-npcm845 = " file://0001-dbus-sdr-Support-NaN-thresholds.patch"
+SRC_URI:append:scm-npcm845 = " file://0003-dbus-sdr-Support-NaN-thresholds.patch"
 SRC_URI:append:scm-npcm845 = " file://0004-Add-SEL-add-command.patch"
 SRC_URI:append:scm-npcm845 = " file://0006-Correct-IPMI-firmware-revision-report.patch"
 SRC_URI:append:scm-npcm845 = " file://0007-dbus-sdr-storagecommands-Add-option-to-use-Clear-met.patch"
@@ -23,6 +23,7 @@ SRC_URI:append:scm-npcm845 = " file://0013-Set-is-from-system-interface-return-f
 SRC_URI:append:scm-npcm845 = " file://0014-Add-SEL-event-after-SEL-clear.patch"
 SRC_URI:append:scm-npcm845 = " file://0015-Fix-seesion-handle-duplicated.patch"
 SRC_URI:append:scm-npcm845 = " file://0016-Add-reset-SEL.patch"
+SRC_URI:append:scm-npcm845 = " file://0017-dbus-sdr-do-not-replace-_-for-sensor-name.patch"
 
 # Add send/get message support
 # ipmid <-> ipmb <-> i2c
