@@ -1,4 +1,4 @@
-From 58e538777e52b4993d90d2740810e67982e09fac Mon Sep 17 00:00:00 2001
+From 54798539989004948797e44acc0e84320346d0e7 Mon Sep 17 00:00:00 2001
 From: kfting <kfting@nuvoton.com>
 Date: Wed, 28 Jul 2021 17:29:20 +0800
 Subject: [PATCH] driver : remoteproc: Arbel remoteproc driver support
@@ -14,10 +14,10 @@ Signed-off-by: kfting <kfting@nuvoton.com>
  create mode 100644 drivers/remoteproc/npcm8xx_remoteproc.c
 
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-common-npcm8xx.dtsi b/arch/arm64/boot/dts/nuvoton/nuvoton-common-npcm8xx.dtsi
-index 059c51781e03..a5462e1a727d 100644
+index 195410002634..94c674bbcf88 100644
 --- a/arch/arm64/boot/dts/nuvoton/nuvoton-common-npcm8xx.dtsi
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-common-npcm8xx.dtsi
-@@ -328,6 +328,21 @@
+@@ -338,6 +338,21 @@ video: video@f0810000 {
  			status = "disabled";
  		};
  
@@ -40,30 +40,23 @@ index 059c51781e03..a5462e1a727d 100644
  			#address-cells = <1>;
  			#size-cells = <1>;
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
-index 1f80c13e1a25..b2e55086c701 100644
+index 43228a738060..256ec2421eaf 100644
 --- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
-@@ -84,6 +84,11 @@
- 		#size-cells = <2>;
- 		ranges;
- 
+@@ -90,6 +90,12 @@ video_memory: framebuffer@0x33000000 {
+ 			reusable;
+ 			linux,cma-default;
+ 		};
++
 +		cp1_tag: tagbuffer@0x36000000  {
 +			reg = <0x0 0x36000000  0x0 0x100000>;
 +			no-map;
 +		};
 +
- 		vcd_memory: framebuffer@0x35000000 {
- 			reg = <0x0 0x35000000 0x0 0x600000>;
- 			no-map;
-@@ -100,6 +105,7 @@
- 			reg = <0x0 0x35600000 0x0 0x600000>;
- 			no-map;
- 		};
-+
  	};
  
  	regulators {
-@@ -652,3 +658,13 @@
+@@ -701,3 +707,13 @@ &i2c25 {
  &i2c26 {
  	status = "okay";
  };
@@ -781,4 +774,5 @@ index 000000000000..03a95d5f7398
 +MODULE_DESCRIPTION("Nuvoton Remote Processor Control Driver");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.17.1
+2.34.1
+
