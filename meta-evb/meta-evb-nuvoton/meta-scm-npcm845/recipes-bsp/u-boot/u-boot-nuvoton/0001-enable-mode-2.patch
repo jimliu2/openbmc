@@ -1,0 +1,28 @@
+From 1a402b5d24615d5e9d5df6cb249ac5aa2f3eefaf Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Wed, 29 Jun 2022 17:33:24 +0800
+Subject: [PATCH] enable mode 2
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ board/nuvoton/arbel/arbel.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/board/nuvoton/arbel/arbel.c b/board/nuvoton/arbel/arbel.c
+index 0e21aa5bce..1280893b3c 100644
+--- a/board/nuvoton/arbel/arbel.c
++++ b/board/nuvoton/arbel/arbel.c
+@@ -99,6 +99,10 @@ int board_init(void)
+ 	/*set PCIRREL*/
+ 	//setbits_le32(0xf08000a0, BIT(0));
+ 
++	/*set spmod  mode 2*/
++	clrbits_le32(0xf0800038, 0x7);
++	setbits_le32(0xf0800038, BIT(0));
++
+ 	clrbits_le32(0xf0801080, BIT(7) | BIT(9) | BIT(5));
+ 	clrbits_le32(0xf0801084, BIT(7) | BIT(9) | BIT(5));
+ 	clrbits_le32(0xf0801088, BIT(7) | BIT(9) | BIT(5));
+-- 
+2.34.1
+
