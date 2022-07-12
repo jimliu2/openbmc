@@ -7,6 +7,7 @@ SRC_URI:append:scm-npcm845 = " \
     file://0004-psu-sensor-support-p2011-psu.patch \
     file://0005-hwmontemp-add-adm-stbsi-support.patch \
     file://0006-add-dimm-sensor.patch \
+    file://0007-add-nic-temp-sensor.patch \
     file://xyz.openbmc_project.dimmsensor.service \
     "
 
@@ -18,6 +19,7 @@ PACKAGECONFIG:scm-npcm845 = "\
     intrusionsensor \
     nvmesensor \
     dimmsensor \
+    mcutempsensor \
     "
 
 PACKAGECONFIG[dimmsensor] = "-Ddimm=enabled, -Ddimm=disabled"

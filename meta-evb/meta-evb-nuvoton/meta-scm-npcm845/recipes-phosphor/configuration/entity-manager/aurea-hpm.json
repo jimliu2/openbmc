@@ -842,6 +842,32 @@
             "Type": "TMP75"
         },
         {
+            "Address": "0x1F",
+            "Bus": 34,
+            "EntityId": 11,
+            "EntityInstance": 0,
+            "Name": "Temp_OCP_NIC",
+            "Reg": "0x01",
+            "RegWidth": 1,
+            "Scale": 1,
+            "Class": "NICTemp",
+            "Thresholds": [
+                {
+                    "Direction": "greater than",
+                    "Name": "upper critical",
+                    "Severity": 1,
+                    "Value": 102.000
+                },
+                {
+                    "Direction": "greater than",
+                    "Name": "upper non critical",
+                    "Severity": 0,
+                    "Value": 97.000
+                }
+            ],
+            "Type": "MCUTempSensor"
+        },
+        {
             "Address": "0x11",
             "Bus": 7,
             "Name": "HSC0",
