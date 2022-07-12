@@ -571,7 +571,7 @@ index 000000000000..8e7d7a2c12f0
 +			#interrupt-cells = <2>;
 +			gpio-line-names =
 +			/*96-127*/
-+			"NMI_BUTTON","CHASSIS_INTRUSION","","","","","","",
++			"NMI_BUTTON","","","","","","","",
 +			"","","","","","","","",
 +			"","","","","","","","",
 +			"","","","","","","","";
@@ -905,10 +905,10 @@ index 000000000000..8e7d7a2c12f0
 +		reg = <0x6f>;
 +		#clock-cells = <0>;
 +
-+		//interrupt-parent = <&gpio3>;
-+		//interrupts = <1 IRQ_TYPE_EDGE_FALLING>; /* gpio 97 */
-+		//interrupt-names = "irq";
-+		//wakeup-source;
++		interrupt-parent = <&gpio3>;
++		interrupts = <1 IRQ_TYPE_EDGE_FALLING>; /* gpio 97 */
++		interrupt-names = "irq";
++		wakeup-source;
 +	};
 +};
 +
