@@ -4,6 +4,7 @@
             "LED": "fan_fault",
             "Name": "DUAL ROTOR FAN CONN",
             "Pwm": 0,
+            "PwmName": "PWM_1",
             "PowerState": "On",
             "EntityId": "0x07",
             "EntityInstance": "0x00",
