@@ -1,16 +1,16 @@
-From 24e7cbed49066d23df76ec6de330547044fce6c3 Mon Sep 17 00:00:00 2001
+From 7ac51db2af2c882f2f736c04a02fde16534e2174 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Thu, 7 Jul 2022 09:59:41 +0800
-Subject: [PATCH] dimm sensor
+Date: Wed, 13 Jul 2022 14:56:25 +0800
+Subject: [PATCH] add dimm sensor
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
  include/DIMMSensor.hpp |  44 ++++
  include/i3cdev.h       |  39 ++++
  meson_options.txt      |   1 +
- src/DIMMSensor.cpp     | 453 +++++++++++++++++++++++++++++++++++++++++
+ src/DIMMSensor.cpp     | 458 +++++++++++++++++++++++++++++++++++++++++
  src/meson.build        |  15 ++
- 5 files changed, 552 insertions(+)
+ 5 files changed, 557 insertions(+)
  create mode 100644 include/DIMMSensor.hpp
  create mode 100644 include/i3cdev.h
  create mode 100644 src/DIMMSensor.cpp
@@ -121,10 +121,10 @@ index ea0302d0..93f29723 100644
 +option('dimm', type: 'feature', value: 'enabled', description: 'Enable DIMM sensor.',)
 diff --git a/src/DIMMSensor.cpp b/src/DIMMSensor.cpp
 new file mode 100644
-index 00000000..57c5a6bb
+index 00000000..ae7fb43e
 --- /dev/null
 +++ b/src/DIMMSensor.cpp
-@@ -0,0 +1,453 @@
+@@ -0,0 +1,458 @@
 +#include <DIMMSensor.hpp>
 +#include <Utils.hpp>
 +#include <VariantVisitors.hpp>
@@ -290,6 +290,7 @@ index 00000000..57c5a6bb
 +    xfer.data = (__u64)buf;
 +    if (ioctl(fd, I3C_IOC_PRIV_XFER(1), &xfer) < 0) {
 +        std::cerr << "Error: transfer failed: " << i3cBus << "\n";
++        close(fd);
 +        return -1;
 +    }
 +
@@ -312,8 +313,11 @@ index 00000000..57c5a6bb
 +    int fd = open(i3cBus.c_str(), O_RDWR);
 +    if (fd < 0)
 +    {
-+        std::cerr << "unable to open i3c bus " << i3cBus << "  err=" << fd
++        if constexpr (debug)
++	{
++            std::cerr << "unable to open i3c bus " << i3cBus << "  err=" << fd
 +                  << "\n";
++        }
 +        return -1;
 +    }
 +
@@ -340,6 +344,7 @@ index 00000000..57c5a6bb
 +        {
 +            std::cerr << i3cBus << ": transfer failed: " << ret << "\n";
 +        }
++        close(fd);
 +        return -1;
 +    }
 +
