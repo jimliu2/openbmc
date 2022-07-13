@@ -1600,12 +1600,6 @@
             "Type": "p2011"
         },
         {
-            "Class": "Gpio",
-            "GpioPolarity": "Low",
-            "Name": "Chassis Intrusion Sensor",
-            "Type": "ChassisIntrusionSensor"
-        },
-        {
             "Address": "0x4c",
             "Bus": 1,
             "EntityId": 3,
