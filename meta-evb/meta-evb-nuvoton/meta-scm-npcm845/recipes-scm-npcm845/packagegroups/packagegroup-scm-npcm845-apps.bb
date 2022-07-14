@@ -72,4 +72,5 @@ RDEPENDS:${PN}-system = " \
         cpu-err \
         dhcp-check \
         phosphor-virtual-sensor \
+        esmi-oob-tool \
         "
