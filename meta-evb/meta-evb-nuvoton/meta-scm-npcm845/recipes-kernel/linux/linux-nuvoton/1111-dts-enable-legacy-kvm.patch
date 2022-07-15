@@ -51,8 +51,8 @@ index b824fce1fb85..57ddeea165b5 100644
 -			reg = <0x0 0x33000000 0x0 0x02000000>;
 -			reusable;
 -			linux,cma-default;
-+		vcd_memory: framebuffer@0x35000000 {
-+			reg = <0x0 0x35000000 0x0 0x600000>;
++		vcd_memory: framebuffer@0x33900000 {
++			reg = <0x0 0x33900000 0x0 0x600000>;
 +			no-map;
 +		};
 +
@@ -63,8 +63,8 @@ index b824fce1fb85..57ddeea165b5 100644
 +			no-map;
 +		};
 +
-+		ece_memory: framebuffer@0x35600000 {
-+			reg = <0x0 0x35600000 0x0 0x600000>;
++		ece_memory: framebuffer@0x33F00000 {
++			reg = <0x0 0x33F00000 0x0 0x600000>;
 +			no-map;
  		};
  	};
