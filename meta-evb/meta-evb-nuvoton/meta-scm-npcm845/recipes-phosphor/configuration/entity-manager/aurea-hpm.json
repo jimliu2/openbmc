@@ -1069,7 +1069,7 @@
             "EntityInstance": 2,
             "Name": "P3V_BAT",
             "PowerState": "Off",
-            "ScaleFactor": 0.952,
+            "ScaleFactor": 0.333,
             "BridgeGpio": [
                 {
                     "Name": "P3V_BAT_EN",
