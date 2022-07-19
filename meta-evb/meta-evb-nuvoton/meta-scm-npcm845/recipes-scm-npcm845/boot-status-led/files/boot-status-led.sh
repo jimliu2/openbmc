@@ -12,23 +12,27 @@ PWR_STATE_INTERFACE_NAME="xyz.openbmc_project.State.Chassis"
 PWR_STATE_Property="CurrentPowerState"
 
 power_state=""
-boot_status=""
 
 mapper wait $LED_INACTIVE_OBJPATH
 mapper wait $LED_STANDBY_OBJPATH
 
 power_state="$(busctl get-property $PWR_STATE_SERVICE $PWR_STATE_OBJPATH $PWR_STATE_INTERFACE_NAME $PWR_STATE_Property | awk '{print $2}')"
 
+echo f0081000.i2c > /sys/bus/platform/drivers/nuvoton-i2c/unbind
+sleep 0.5s
+echo f0081000.i2c > /sys/bus/platform/drivers/nuvoton-i2c/bind
+sleep 0.5s
+
 if [[ $power_state == "\"xyz.openbmc_project.State.Chassis.PowerState.On\"" ]];then
-    if [[ $boot_status != "On" ]];then
-        busctl set-property $LED_SERVICE_NAME $LED_INACTIVE_OBJPATH $LED_INTERFACE_NAME $LED_Property b true
-        busctl set-property $LED_SERVICE_NAME $LED_STANDBY_OBJPATH $LED_INTERFACE_NAME $LED_Property b false
-        boot_status="On"
-    fi
+    echo $power_state
+    busctl set-property $LED_SERVICE_NAME $LED_INACTIVE_OBJPATH $LED_INTERFACE_NAME $LED_Property b true
+    sleep 0.5s
+    busctl set-property $LED_SERVICE_NAME $LED_STANDBY_OBJPATH $LED_INTERFACE_NAME $LED_Property b false
+    sleep 0.5s
 else
-    if [[ $boot_status != "Off" ]];then
-        busctl set-property $LED_SERVICE_NAME $LED_STANDBY_OBJPATH $LED_INTERFACE_NAME $LED_Property b true
-        busctl set-property $LED_SERVICE_NAME $LED_INACTIVE_OBJPATH $LED_INTERFACE_NAME $LED_Property b false
-        boot_status="Off"
-    fi
+    echo $power_state
+    busctl set-property $LED_SERVICE_NAME $LED_STANDBY_OBJPATH $LED_INTERFACE_NAME $LED_Property b true
+    sleep 0.5s
+    busctl set-property $LED_SERVICE_NAME $LED_INACTIVE_OBJPATH $LED_INTERFACE_NAME $LED_Property b false
+    sleep 0.5s
 fi
