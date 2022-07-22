@@ -18,11 +18,6 @@ mapper wait $LED_STANDBY_OBJPATH
 
 power_state="$(busctl get-property $PWR_STATE_SERVICE $PWR_STATE_OBJPATH $PWR_STATE_INTERFACE_NAME $PWR_STATE_Property | awk '{print $2}')"
 
-echo f0081000.i2c > /sys/bus/platform/drivers/nuvoton-i2c/unbind
-sleep 0.5s
-echo f0081000.i2c > /sys/bus/platform/drivers/nuvoton-i2c/bind
-sleep 0.5s
-
 if [[ $power_state == "\"xyz.openbmc_project.State.Chassis.PowerState.On\"" ]];then
     echo $power_state
     busctl set-property $LED_SERVICE_NAME $LED_INACTIVE_OBJPATH $LED_INTERFACE_NAME $LED_Property b true
