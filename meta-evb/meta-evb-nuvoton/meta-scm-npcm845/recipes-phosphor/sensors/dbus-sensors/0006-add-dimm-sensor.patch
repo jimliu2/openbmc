@@ -1,6 +1,6 @@
-From 596bdf10ffbc873fc61a8e6cdd3996f4c6d4d0d5 Mon Sep 17 00:00:00 2001
+From 8ab3c6b3c234487317b625180429b7e726d9697c Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Thu, 21 Jul 2022 11:05:23 +0800
+Date: Mon, 25 Jul 2022 17:22:03 +0800
 Subject: [PATCH] add dimm sensor
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
@@ -208,7 +208,7 @@ index ea0302d0..93f29723 100644
 +option('dimm', type: 'feature', value: 'enabled', description: 'Enable DIMM sensor.',)
 diff --git a/src/DIMMSensor.cpp b/src/DIMMSensor.cpp
 new file mode 100644
-index 00000000..2546be4d
+index 00000000..e752ef17
 --- /dev/null
 +++ b/src/DIMMSensor.cpp
 @@ -0,0 +1,552 @@
@@ -569,7 +569,7 @@ index 00000000..2546be4d
 +
 +void DIMMSensor::read(void)
 +{
-+    static constexpr size_t pollTime = 1; // in seconds
++    static constexpr size_t pollTime = 2; // in seconds
 +
 +    waitTimer.expires_from_now(boost::posix_time::seconds(pollTime));
 +    waitTimer.async_wait([this](const boost::system::error_code& ec) {
