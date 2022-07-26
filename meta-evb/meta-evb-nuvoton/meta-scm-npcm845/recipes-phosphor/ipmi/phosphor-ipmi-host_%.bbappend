@@ -30,6 +30,7 @@ SRC_URI:append:scm-npcm845 = " file://0020-fix-percentage-type-show.patch"
 SRC_URI:append:scm-npcm845 = " file://0021-sensor-reading-optional-zero.patch"
 SRC_URI:append:scm-npcm845 = " file://0022-add-sensor-reading-factory-support.patch"
 SRC_URI:append:scm-npcm845 = " file://0023-add-oem-sel-support.patch"
+SRC_URI:append:scm-npcm845 = " file://0024-update-chassishandler-from-intel-oem-ipmi.patch"
 
 # Add send/get message support
 # ipmid <-> ipmb <-> i2c
