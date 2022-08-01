@@ -10,7 +10,8 @@ SRC_URI:append:scm-npcm845 = " file://0007-hwmon-sbtsi-Add-basic-support-for-SB-
 SRC_URI:append:scm-npcm845 = " file://0008-dts-scm-npcm845-add-gpio-name-P3V_BAT_EN.patch"
 SRC_URI:append:scm-npcm845 = " file://0009-dts-add-bu4-bu5-pinctrl.patch"
 SRC_URI:append:scm-npcm845 = " file://0010-DTS-Add-sensor-TMP461.patch"
-SRC_URI:append:scm-npcm845 = " file://0001-updaye-amd-apml-dirver.patch"
+SRC_URI:append:scm-npcm845 = " file://0011-updaye-amd-apml-dirver.patch"
+SRC_URI:append:scm-npcm845 = " file://0012-rtl8211f-customized-led.patch"
 
 SRC_URI:append:scm-npcm845 = " file://enable-legacy-kvm.cfg"
 SRC_URI:append:scm-npcm845 = " file://1111-dts-enable-legacy-kvm.patch"
