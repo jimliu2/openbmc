@@ -1,6 +1,6 @@
-From 8ab3c6b3c234487317b625180429b7e726d9697c Mon Sep 17 00:00:00 2001
+From b2bff05193eb34208371c62db3e7dbd16b201f03 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Mon, 25 Jul 2022 17:22:03 +0800
+Date: Tue, 2 Aug 2022 15:23:43 +0800
 Subject: [PATCH] add dimm sensor
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
@@ -9,9 +9,9 @@ Signed-off-by: Stanley Chu <yschu@nuvoton.com>
  include/amd-apml.h     |  74 ++++++
  include/i3cdev.h       |  39 +++
  meson_options.txt      |   1 +
- src/DIMMSensor.cpp     | 552 +++++++++++++++++++++++++++++++++++++++++
+ src/DIMMSensor.cpp     | 566 +++++++++++++++++++++++++++++++++++++++++
  src/meson.build        |  15 ++
- 6 files changed, 730 insertions(+)
+ 6 files changed, 744 insertions(+)
  create mode 100644 include/DIMMSensor.hpp
  create mode 100644 include/amd-apml.h
  create mode 100644 include/i3cdev.h
@@ -208,10 +208,10 @@ index ea0302d0..93f29723 100644
 +option('dimm', type: 'feature', value: 'enabled', description: 'Enable DIMM sensor.',)
 diff --git a/src/DIMMSensor.cpp b/src/DIMMSensor.cpp
 new file mode 100644
-index 00000000..e752ef17
+index 00000000..1ea7248e
 --- /dev/null
 +++ b/src/DIMMSensor.cpp
-@@ -0,0 +1,552 @@
+@@ -0,0 +1,566 @@
 +#include <DIMMSensor.hpp>
 +#include <Utils.hpp>
 +#include <VariantVisitors.hpp>
@@ -230,6 +230,7 @@ index 00000000..e752ef17
 +#include <numeric>
 +#include <string>
 +#include <vector>
++#include <thread>
 +
 +extern "C"
 +{
@@ -238,6 +239,7 @@ index 00000000..e752ef17
 +}
 +
 +constexpr const bool debug = false;
++bool thread_exist = false;
 +
 +constexpr const char* configInterface =
 +    "xyz.openbmc_project.Configuration.dimm";
@@ -309,6 +311,7 @@ index 00000000..e752ef17
 +DIMMSensor::~DIMMSensor()
 +{
 +    waitTimer.cancel();
++    thread_exist = true;
 +    objectServer.remove_interface(thresholdInterfaceWarning);
 +    objectServer.remove_interface(thresholdInterfaceCritical);
 +    objectServer.remove_interface(sensorInterface);
@@ -317,16 +320,6 @@ index 00000000..e752ef17
 +
 +void DIMMSensor::init(void)
 +{
-+#if 0
-+    int ret;
-+    double v;
-+    ret = get_sensor_val(&v);
-+    if (ret < 0)
-+    {
-+        sensors.erase(sensorName);
-+        return;
-+    }
-+#endif
 +    if (sensorType == "temperature")
 +    {
 +        setInitialProperties(dbusConnection, sensor_paths::unitDegreesC);
@@ -343,7 +336,10 @@ index 00000000..e752ef17
 +        sensors.erase(sensorName);
 +        return;
 +    }
-+    read();
++    std::thread thread([this]() {
++    	read();
++    });
++    thread.detach();
 +}
 +
 +void DIMMSensor::checkThresholds(void)
@@ -569,6 +565,23 @@ index 00000000..e752ef17
 +
 +void DIMMSensor::read(void)
 +{
++    double v;
++    while (!thread_exist) {
++	int ret = get_sensor_val(&v);
++	if (ret == 0)
++	{
++            if constexpr (debug)
++            {
++                std::cerr << sensorName << ":update sensor value to " << v << "\n";
++            }
++            updateValue(v);
++	} else {
++	    // no reading
++            updateValue(std::numeric_limits<double>::quiet_NaN());
++	}
++        std::this_thread::sleep_for(std::chrono::seconds(2));
++    }
++#if 0
 +    static constexpr size_t pollTime = 2; // in seconds
 +
 +    waitTimer.expires_from_now(boost::posix_time::seconds(pollTime));
@@ -602,6 +615,7 @@ index 00000000..e752ef17
 +
 +        read();
 +    });
++#endif
 +}
 +
 +void createSensors(
