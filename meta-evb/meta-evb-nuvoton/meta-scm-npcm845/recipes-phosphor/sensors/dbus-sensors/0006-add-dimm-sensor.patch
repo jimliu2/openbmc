@@ -1,17 +1,17 @@
-From b2bff05193eb34208371c62db3e7dbd16b201f03 Mon Sep 17 00:00:00 2001
+From 7998cd7dd0c4c79f61cbd0bbe347cc8eb0c438a1 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
-Date: Tue, 2 Aug 2022 15:23:43 +0800
+Date: Tue, 2 Aug 2022 17:22:49 +0800
 Subject: [PATCH] add dimm sensor
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
  include/DIMMSensor.hpp |  49 ++++
- include/amd-apml.h     |  74 ++++++
+ include/amd-apml.h     |  74 +++++
  include/i3cdev.h       |  39 +++
  meson_options.txt      |   1 +
- src/DIMMSensor.cpp     | 566 +++++++++++++++++++++++++++++++++++++++++
+ src/DIMMSensor.cpp     | 593 +++++++++++++++++++++++++++++++++++++++++
  src/meson.build        |  15 ++
- 6 files changed, 744 insertions(+)
+ 6 files changed, 771 insertions(+)
  create mode 100644 include/DIMMSensor.hpp
  create mode 100644 include/amd-apml.h
  create mode 100644 include/i3cdev.h
@@ -208,10 +208,10 @@ index ea0302d0..93f29723 100644
 +option('dimm', type: 'feature', value: 'enabled', description: 'Enable DIMM sensor.',)
 diff --git a/src/DIMMSensor.cpp b/src/DIMMSensor.cpp
 new file mode 100644
-index 00000000..1ea7248e
+index 00000000..00ad97bd
 --- /dev/null
 +++ b/src/DIMMSensor.cpp
-@@ -0,0 +1,566 @@
+@@ -0,0 +1,593 @@
 +#include <DIMMSensor.hpp>
 +#include <Utils.hpp>
 +#include <VariantVisitors.hpp>
@@ -281,7 +281,7 @@ index 00000000..1ea7248e
 +                             uint8_t tempReg, double max, double min, uint8_t adcSel) :
 +    Sensor(escapeName(sensorName), std::move(thresholdData),
 +           sensorConfiguration, sensorType,
-+           false, false, max, min, conn),
++           false, false, max, min, conn, PowerState::biosPost),
 +    busId(busId), addr(addr), pid(pid), tempReg(tempReg), sensorName(sensorName), sensorType(sensorType),
 +    interface(interface), adcSel(adcSel), objectServer(objectServer), waitTimer(io)
 +{
@@ -566,7 +566,20 @@ index 00000000..1ea7248e
 +void DIMMSensor::read(void)
 +{
 +    double v;
++    int pollTime = 1;
++    int failCount = 0;
 +    while (!thread_exist) {
++        if (!readingStateGood())
++        {
++            updateValue(std::numeric_limits<double>::quiet_NaN());
++            std::this_thread::sleep_for(std::chrono::seconds(1));
++            continue;
++        }
++	if (failCount > 10)
++	{
++            std::cerr << sensorName << " is not detected, stop reading\n";
++	    return;
++	}
 +	int ret = get_sensor_val(&v);
 +	if (ret == 0)
 +	{
@@ -575,11 +588,25 @@ index 00000000..1ea7248e
 +                std::cerr << sensorName << ":update sensor value to " << v << "\n";
 +            }
 +            updateValue(v);
++            pollTime = 1;
++	    failCount = 0;
 +	} else {
-+	    // no reading
++            // no reading
++            #if 0
++            if (readingStateGood())
++            {
++                std::cerr << "remove sensor " << sensorName << "\n";
++                sensors.erase(sensorName);
++                return;
++            }
++            #endif
++	    failCount++;
++            if (pollTime < 10) {
++                pollTime++;
++            }
 +            updateValue(std::numeric_limits<double>::quiet_NaN());
 +	}
-+        std::this_thread::sleep_for(std::chrono::seconds(2));
++        std::this_thread::sleep_for(std::chrono::seconds(pollTime));
 +    }
 +#if 0
 +    static constexpr size_t pollTime = 2; // in seconds
