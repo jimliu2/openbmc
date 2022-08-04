@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # This script to reload the hwmon/dimm/nvme sensors
-# Verson : v2
+# Verson : v3
 
 # stop services
 systemctl stop xyz.openbmc_project.hwmontempsensor.service
@@ -23,6 +23,8 @@ sleep 0.5s
 systemctl stop xyz.openbmc_project.dimmsensor.service
 sleep 0.5s
 systemctl stop xyz.openbmc_project.nvmesensor.service
+sleep 0.5s
+systemctl stop xyz.openbmc_project.psusensor.service
 sleep 0.5s
 
 # reload i2c drivers
@@ -41,4 +43,6 @@ sleep 0.5s
 systemctl start xyz.openbmc_project.dimmsensor.service
 sleep 0.5s
 systemctl start xyz.openbmc_project.nvmesensor.service
+sleep 0.5s
+systemctl start xyz.openbmc_project.psusensor.service
 sleep 0.5s
