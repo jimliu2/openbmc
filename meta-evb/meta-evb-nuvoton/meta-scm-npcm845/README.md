@@ -6,6 +6,39 @@ This layer depends on:
   branch: npcm-v2.11
 ```
 
+### Build
+1. Source the setup script
+```ruby
+. setup scm-npcm845
+```
+
+2. Build the image
+
+The scm-npcm845 layer uses [Entity manager](https://github.com/openbmc/entity-manager)
+
+Build for Nor flash
+```ruby
+DISTRO=arbel-scm-entity bitbake obmc-phosphor-image
+```
+
+Build for emmc
+```ruby
+DISTRO=arbel-scm-emmc-entity  bitbake obmc-phosphor-image
+```
+
+### Output Images
+* You will find images in path build/scm-npcm845/tmp/deploy/images/scm-npcm845
+
+Type          | Description                                                                                                     |
+:-------------|:-------------------------------------------------------------------------------------------------------- |
+image-bmc   |  includes image-u-boot and image-kernel and image-rofs                                                                     |
+image-uboot   |  tipfw + bootlock + u-boot                                                                     |
+image-kernel  |  Fit Image(Linux kernel + dtb + initramfs)                                                                                     |
+image-rofs    |  OpenBMC Root Filesystem
+obmc-phosphor-image-scm-npcm845.static.mtd.tar | NOR flash image for redfish fw update(image-uboot + image-kernel + image-rofs)  |
+obmc-phosphor-image-scm-npcm845.static.mtd.all.tar | NOR flash image for redfish fw update(image-bmc)  |
+obmc-phosphor-image-scm-npcm845.ext4.mmc.tar | emmc image for redfish fw update (kernel + rofs)  |
+
 # [v2.08](https://github.com/Nuvoton-Israel/openbmc/blob/npcm-v2.11/meta-evb/meta-evb-nuvoton/meta-scm-npcm845/recipes-core/os-release/os-release.bbappend) release note
 
 - [Uboot 2021.04](https://github.com/Nuvoton-Israel/u-boot/tree/npcm-v2021.04)
