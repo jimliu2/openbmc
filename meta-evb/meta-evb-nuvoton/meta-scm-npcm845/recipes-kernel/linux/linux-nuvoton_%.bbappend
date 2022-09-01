@@ -17,5 +17,6 @@ SRC_URI:append:scm-npcm845 = " file://0014-driver-i2c-npcm7xx-don-t-check-sda-sc
 SRC_URI:append:scm-npcm845 = " file://0015-device-tree-optee-enable.patch"
 SRC_URI:append:scm-npcm845 = " file://0016-WA-fix-watchdog-bootstatus-incorrect.patch"
 
-SRC_URI:append:scm-npcm845 = " file://enable-legacy-kvm.cfg"
-SRC_URI:append:scm-npcm845 = " file://1111-dts-enable-legacy-kvm.patch"
+SRC_URI:append:scm-npcm845 = " file://enable-v4l2-kvm.cfg"
+#SRC_URI:append:scm-npcm845 = " file://enable-legacy-kvm.cfg"
+#SRC_URI:append:scm-npcm845 = " file://1111-dts-enable-legacy-kvm.patch"
