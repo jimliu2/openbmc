@@ -1,0 +1,285 @@
+From 2b0a0fb92b2051a70264fc2a3a7761bd5d8c7201 Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Tue, 27 Sep 2022 15:28:06 +0800
+Subject: [PATCH] add i3c ibi test driver
+
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
+---
+ drivers/i3c/Kconfig        |   6 +
+ drivers/i3c/Makefile       |   1 +
+ drivers/i3c/i3c-ibi-test.c | 238 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 245 insertions(+)
+ create mode 100644 drivers/i3c/i3c-ibi-test.c
+
+diff --git a/drivers/i3c/Kconfig b/drivers/i3c/Kconfig
+index 01642768ab5f..59712ed1e0b0 100644
+--- a/drivers/i3c/Kconfig
++++ b/drivers/i3c/Kconfig
+@@ -35,5 +35,11 @@ config I3CDEV
+ 	  Note that this application programming interface is EXPERIMENTAL
+ 	  and hence SUBJECT TO CHANGE WITHOUT NOTICE while it stabilizes.
+ 
++config I3C_IBI_TEST
++	bool "I3C IBI Test"
++	default y
++	help
++	   This driver is used for I3C IBI test.
++
+ source "drivers/i3c/master/Kconfig"
+ endif # I3C
+diff --git a/drivers/i3c/Makefile b/drivers/i3c/Makefile
+index 606d422841b2..ea9145fb48d9 100644
+--- a/drivers/i3c/Makefile
++++ b/drivers/i3c/Makefile
+@@ -3,3 +3,4 @@ i3c-y				:= device.o master.o
+ obj-$(CONFIG_I3C)		+= i3c.o
+ obj-$(CONFIG_I3CDEV)		+= i3cdev.o
+ obj-$(CONFIG_I3C)		+= master/
++obj-$(CONFIG_I3C_IBI_TEST)	+= i3c-ibi-test.o
+diff --git a/drivers/i3c/i3c-ibi-test.c b/drivers/i3c/i3c-ibi-test.c
+new file mode 100644
+index 000000000000..f1ff8d60a4ef
+--- /dev/null
++++ b/drivers/i3c/i3c-ibi-test.c
+@@ -0,0 +1,238 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) Nuvoton Technology corporation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
++#include <linux/i3c/device.h>
++#include <linux/i3c/master.h>
++
++#define MSG_BUF_SIZE		8
++
++struct rx_buf {
++	wait_queue_head_t wait_queue;
++	spinlock_t lock;
++	u8 buf[MSG_BUF_SIZE];
++	u16 len;
++	bool avail;
++	bool enable;
++};
++
++static DEFINE_MUTEX(ibi_test_lock);
++
++#define ST_LSM6DSO_ID	1
++static const struct i3c_device_id ibi_test_i3c_ids[] = {
++	I3C_DEVICE(0x0419, 0x0, (void *)0),
++	I3C_DEVICE(0x0104, 0x006C, (void *)ST_LSM6DSO_ID),
++	I3C_DEVICE(0x3f6, 0x8000, (void *)0),
++	{ /* sentinel */ },
++};
++MODULE_DEVICE_TABLE(i3c, ibi_test_i3c_ids);
++
++static void ibi_test_write_reg(struct i3c_device *i3cdev, u8 reg, u8 val)
++{
++	struct i3c_priv_xfer xfer;
++	char buf[2];
++	int ret;
++
++	buf[0] = reg;
++	buf[1] = val;
++	xfer.rnw = false;
++	xfer.len = 2;
++	xfer.data.in = buf;
++
++	ret = i3c_device_do_priv_xfers(i3cdev, &xfer, 1);
++	dev_info(&i3cdev->dev, "write reg 0x%02x val 0x%02x ret %d\n", reg, val, ret);
++}
++
++static void ibi_test_ibi_handler(struct i3c_device *i3cdev,
++				    const struct i3c_ibi_payload *payload)
++{
++	struct rx_buf *rbuf = dev_get_drvdata(&i3cdev->dev);
++	struct i3c_priv_xfer xfer;
++	int i;
++
++	dev_info(&i3cdev->dev, "handle slave ibi: payload len %d\n", payload->len);
++#if 0
++	if (payload->len == 0) {
++		xfer.rnw = true;
++		xfer.len = MSG_BUF_SIZE;
++		xfer.data.in = rbuf->buf;
++
++		i3c_device_do_priv_xfers(i3cdev, &xfer, 1);
++		rbuf->avail = true;
++		rbuf->len = xfer.len;
++		dev_info(&i3cdev->dev, "ibi data len = %d\n", rbuf->len);
++	} else
++#endif
++	if (payload->len <= MSG_BUF_SIZE) {
++		memcpy(rbuf->buf, payload->data, payload->len);
++		rbuf->len = payload->len;
++		rbuf->avail = true;
++		for (i = 0; i < rbuf->len; i++)
++			pr_info("%02x ", rbuf->buf[i]);
++		pr_info("\n");
++	}
++	wake_up_interruptible(&rbuf->wait_queue);
++}
++
++static ssize_t ibi_test_read(struct file *filp, struct kobject *kobj,
++			   struct bin_attribute *bin_attr,
++			   char *buf, loff_t off, size_t count)
++{
++	struct device *dev = kobj_to_dev(kobj);
++	struct i3c_device *i3cdev = dev_to_i3cdev(dev);
++	struct rx_buf *rbuf = dev_get_drvdata(dev);
++	unsigned long flags;
++	u16 len;
++
++	if (unlikely(!count))
++		return count;
++
++	wait_event_interruptible(rbuf->wait_queue, rbuf->avail);
++
++	spin_lock_irqsave(&rbuf->lock, flags);
++	len = (count > rbuf->len) ? rbuf->len : count;
++	memcpy(buf, rbuf->buf, len);
++	rbuf->avail = false;
++	spin_unlock_irqrestore(&rbuf->lock, flags);
++
++	dev_info(&i3cdev->dev, "%s:len %d\n", __func__, len);
++	return len;
++}
++
++static ssize_t ibi_test_write(struct file *filp, struct kobject *kobj,
++				   struct bin_attribute *attr,
++				   char *buf, loff_t off, size_t count)
++{
++	struct device *dev = kobj_to_dev(kobj);
++	struct i3c_device *i3c = dev_to_i3cdev(dev);
++	struct i3c_priv_xfer xfer;
++	int status;
++	u16 len;
++
++	if (unlikely(!count))
++		return count;
++
++	len = (count > MSG_BUF_SIZE) ? MSG_BUF_SIZE : count;
++
++	mutex_lock(&ibi_test_lock);
++	xfer.rnw = false;
++	xfer.len = len;
++	xfer.data.in = buf;
++	status = i3c_device_do_priv_xfers(i3c, &xfer, 1);
++	mutex_unlock(&ibi_test_lock);
++
++	if (status)
++		return -EIO;
++	else
++		return len;
++}
++
++static const struct bin_attribute msg_buf_attr = {
++	.attr = {
++		.name = "msg_buf",
++		.mode = 0644,
++	},
++	.size = MSG_BUF_SIZE,
++	.read = ibi_test_read,
++	.write = ibi_test_write,
++};
++
++static ssize_t show_enable(struct device *dev, struct device_attribute *attr,
++			   char *buf)
++{
++	struct rx_buf *rbuf = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%d\n", rbuf->enable);
++}
++
++static ssize_t store_enable(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct rx_buf *rbuf = dev_get_drvdata(dev);
++	struct i3c_device *i3cdev = dev_to_i3cdev(dev);
++
++	if (count && buf[0] != '0') {
++		ibi_test_write_reg(i3cdev, 0x10, 0x40);
++		ibi_test_write_reg(i3cdev, 0x0D, 0x01);
++		rbuf->enable = true;
++	} else
++		rbuf->enable = false;
++
++	return count;
++}
++
++static DEVICE_ATTR(enable, S_IRUGO | S_IWUSR, show_enable, store_enable);
++
++static int ibi_test_i3c_probe(struct i3c_device *i3cdev)
++{
++	struct device *dev = &i3cdev->dev;
++	const struct i3c_device_id *id = i3c_device_match_id(i3cdev, ibi_test_i3c_ids);
++	struct i3c_ibi_setup ibireq = {};
++	struct rx_buf *rbuf;
++	int ret;
++
++	rbuf = kzalloc(sizeof(*rbuf), GFP_KERNEL);
++	if (!rbuf)
++		return -ENOMEM;
++
++	if (id->data == (void *)ST_LSM6DSO_ID) {
++		ret = sysfs_create_file(&dev->kobj, &dev_attr_enable.attr);
++		if (ret)
++			goto err_ret;
++	}
++
++	ibireq.handler = ibi_test_ibi_handler;
++	ibireq.max_payload_len = MSG_BUF_SIZE;
++	ibireq.num_slots = 1;
++
++	ret = i3c_device_request_ibi(i3cdev, &ibireq);
++	ret |= i3c_device_enable_ibi(i3cdev);
++
++	if (ret)
++		goto err_ret;
++
++	dev_set_drvdata(dev, rbuf);
++	init_waitqueue_head(&rbuf->wait_queue);
++	spin_lock_init(&rbuf->lock);
++
++	ret = sysfs_create_bin_file(&i3cdev->dev.kobj, &msg_buf_attr);
++	if (ret)
++		goto err_ret;
++
++	dev_info(&i3cdev->dev, "%u byte message buffer\n",
++			MSG_BUF_SIZE);
++
++	return 0;
++
++err_ret:
++	kfree(rbuf);
++	return ret;
++}
++
++static int ibi_test_i3c_remove(struct i3c_device *i3cdev)
++{
++	struct rx_buf *rbuf = dev_get_drvdata(&i3cdev->dev);
++
++	sysfs_remove_bin_file(&i3cdev->dev.kobj, &msg_buf_attr);
++	kfree(rbuf);
++
++	return 0;
++}
++
++static struct i3c_driver ibi_test_driver = {
++	.driver = {
++		.name = "ibi_test",
++	},
++	.probe = ibi_test_i3c_probe,
++	.remove = ibi_test_i3c_remove,
++	.id_table = ibi_test_i3c_ids,
++};
++module_i3c_driver(ibi_test_driver);
++
++MODULE_DESCRIPTION("Driver for I3C IBI Test");
++MODULE_LICENSE("GPL v2");
+-- 
+2.17.1
+
