@@ -1,6 +1,5 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/linux-nuvoton:"
 
-SRCREV:evb-npcm845 = "3cc996f8735998979416233d671def9db7486b1e"
 SRC_URI:append:evb-npcm845 = " file://evb-npcm845.cfg"
 SRC_URI:append:evb-npcm845 = " file://enable-v4l2.cfg"
 
