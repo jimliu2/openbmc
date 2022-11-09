@@ -1,22 +1,23 @@
-From de73e2ba3c30724dfc1ac16a14b9a04a1ce2ea5c Mon Sep 17 00:00:00 2001
+From df8b09384a66591769e461443e553d53f6b7f0e8 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
 Date: Tue, 27 Sep 2022 15:28:06 +0800
 Subject: [PATCH] add i3c ibi test
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
- .../boot/dts/nuvoton/nuvoton-npcm845-evb.dts  | 12 +-----
+ .../boot/dts/nuvoton/nuvoton-npcm845-evb.dts  | 14 +-----
  drivers/i3c/i3cdev.c                          | 43 +++++++++++++++++++
- 2 files changed, 44 insertions(+), 11 deletions(-)
+ 2 files changed, 45 insertions(+), 12 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
-index aa15428b67e5..12c51a96bbe8 100644
+index aa15428b67e5..4cf5e56b1c3f 100644
 --- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
 +++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
-@@ -515,17 +515,7 @@
+@@ -514,18 +514,8 @@
+ 
  			i3c0: i3c@fff10000 {
  				status = "okay";
- 				i2c-scl-hz = <400000>;
+-				i2c-scl-hz = <400000>;
 -				i3c-scl-hz = <4000000>;
 -				sensor0@0x5c {
 -					compatible = "st,lps22hh";
@@ -28,7 +29,8 @@ index aa15428b67e5..12c51a96bbe8 100644
 -				status = "okay";
 -				i2c-scl-hz = <400000>;
 -				i3c-scl-hz = <4000000>;
-+				i3c-scl-hz = <10000000>;
++				i2c-scl-hz = <500000>;
++				i3c-scl-hz = <12500000>;
  			};
  		};
  	};
