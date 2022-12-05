@@ -84,7 +84,7 @@ python do_merge_bootloaders() {
 do_prepare_bootloaders[depends] += " \
     npcm8xx-tip-fw:do_deploy \
     npcm8xx-bootblock:do_deploy \
-    arm-trusted-firmware:do_deploy \
+    trusted-firmware-a:do_deploy \
     optee-os:do_deploy \
     u-boot-nuvoton:do_deploy \
     npcm7xx-bingo-native:do_populate_sysroot \
