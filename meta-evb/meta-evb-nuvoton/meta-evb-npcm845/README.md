@@ -250,12 +250,12 @@ setenv stdout serial
 ```
 * Blue/Green EVB, boot from flash 0
 ```ruby
-setenv uimage_flash_addr 0x80200000
+setenv uimage_flash_addr 0x80400000
 ```
 * Red EVB, boot from flash 1
 ```ruby
 setenv bootcmd 'mw fb000000 030111BC; run romboot'
-setenv uimage_flash_addr 0x88200000
+setenv uimage_flash_addr 0x88400000
 ```
 
 * Save uboot env to flash
@@ -283,10 +283,10 @@ setenv ethact gmac2
 tftp 10000000 image-kernel
 /* Blue/Green EVB */
 sf probe 0:0
-sf update 0x10000000 0x200000 ${filesize}
+sf update 0x10000000 0x400000 ${filesize}
 /* Red EVB */
 sf probe 0:1
-sf update 0x10000000 0x200000 ${filesize}
+sf update 0x10000000 0x400000 ${filesize}
 ```
 
 * Flash bootloader
