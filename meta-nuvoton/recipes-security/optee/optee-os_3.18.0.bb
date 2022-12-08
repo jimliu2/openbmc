@@ -14,11 +14,10 @@ EXTRA_OEMAKE:append:task-compile = " EARLY_TA_PATHS=${TMPDIR}/optee/bc50d971-d4c
 
 S = "${WORKDIR}/git"
 BRANCH ?= "nuvoton"
-REPO ?= "git://github.com/Nuvoton-Israel/optee_os.git;branch=nuvoton;protocol=https"
-BRANCHARG = "${@['nobranch=1', 'branch=${BRANCH}'][d.getVar('BRANCH', True) != '']}"
-SRC_URI = "${REPO};${BRANCHARG}"
+REPO ?= "git://github.com/Nuvoton-Israel/optee_os.git;branch=npcm_3_18;protocol=https"
 
-SRCREV = "bc5eb946dbdc3eb373af48583609ff5bb3520935"
+SRC_URI = "${REPO}"
+SRCREV = "485dc7ac4e4a3f51d86c5b6562e3720a338441c7"
 
 OPTEEMACHINE ?= "nuvoton"
 MACHINE_SOC ?= "npcm8xx"
