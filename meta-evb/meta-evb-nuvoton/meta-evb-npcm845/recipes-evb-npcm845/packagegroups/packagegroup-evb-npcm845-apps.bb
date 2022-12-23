@@ -66,4 +66,5 @@ RDEPENDS:${PN}-system = " \
         program-vbios \
         optee-client \
         optee-test \
+        cerberus-utility \
         "
