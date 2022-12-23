@@ -1,7 +1,7 @@
 
 KBRANCH ?= "NPCM-5.10-OpenBMC"
 LINUX_VERSION ?= "5.10.67"
-SRCREV = "b7d875a7724aaa2ecab3517429c76e6d17c07680"
+SRCREV = "dc0d18f5c0a8b332026b14048a848976b03e88fc"
 
 require linux-nuvoton.inc
 
