@@ -12,5 +12,5 @@ SRC_URI:append:evb-npcm845 = " file://0006-dts-npcm845-evb-add-ipmb-device-on-i2
 SRC_URI:append:evb-npcm845 = " file://0007-arm64-dts-nuvoton-npcm845-evb-add-nmi-out-and-button.patch"
 SRC_URI:append:evb-npcm845 = " file://0008-dts-npcm845-evb-add-spi-gpio-node-to-program-vbios.patch"
 SRC_URI:append:evb-npcm845 = " file://0011-replace-jtag2-pins-with-tp-jtag3-pins.patch"
-SRC_URI:append:evb-npcm845 = " file://0014-dts-evb-npcm845-add-tip-mailbox-support.patch"
+
 
