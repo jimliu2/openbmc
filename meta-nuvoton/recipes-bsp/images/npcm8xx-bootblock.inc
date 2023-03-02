@@ -5,13 +5,13 @@ LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=650b869bd8ff2aed59c62bad2a22a821"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-FILENAME = "arbel_a35_bootblock.${PV}.bin"
+FILENAME = "arbel_a35_bootblock_${PV}.bin"
 
 S = "${WORKDIR}/git"
 
 SRC_URI = " \
     git://github.com/Nuvoton-Israel/npcm8xx-bootblock;branch=main;protocol=https \
-    https://github.com/Nuvoton-Israel/npcm8xx-bootblock/releases/download/${RELEASE}/${FILENAME};downloadfilename=${FILENAME};name=bin \
+    https://github.com/Nuvoton-Israel/npcm8xx-bootblock/releases/download/${RELEASE}/arbel_a35_bootblock.${PV}.bin;downloadfilename=${FILENAME};name=bin \
 "
 
 
