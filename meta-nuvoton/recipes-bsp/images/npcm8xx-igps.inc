@@ -25,6 +25,8 @@ do_install() {
 	install py_scripts/ImageGeneration/references/UbootHeader_${DEVICE_GEN}.xml ${DEST}
 	install py_scripts/ImageGeneration/inputs/BL31_AndHeader.xml ${DEST}
 	install py_scripts/ImageGeneration/inputs/OpTeeAndHeader.xml ${DEST}
+	install py_scripts/ImageGeneration/asn1.py ${DEST}
+	install py_scripts/ImageGeneration/BinarySignatureGenerator.py ${DEST}
 }
 
 inherit native
