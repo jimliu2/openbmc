@@ -3,7 +3,7 @@
 #@DESCRIPTION: Common machine configuration for Nuvoton NPCM8XX Chip
 
 require conf/machine/include/nuvoton.inc
-require conf/machine/include/keys.inc
+require conf/machine/include/igps-keys.inc
 
 KERNEL_IMAGETYPE ?= "Image"
 KERNEL_EXTRA_ARGS ?= "UIMAGE_LOADADDR=0x00008000"
