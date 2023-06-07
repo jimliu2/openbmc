@@ -37,8 +37,8 @@ inherit deploy
 
 do_deploy () {
 	# copy default keys to deploy folder
-	install -d ${DEPLOY_DIR_IMAGE}
-	cp -vur py_scripts/ImageGeneration/keys/${SIGN_TYPE} ${DEPLOY_DIR_IMAGE}/
+	install -d ${DEPLOYDIR}/${SIGN_TYPE}
+	cp -vur py_scripts/ImageGeneration/keys/${SIGN_TYPE} ${DEPLOYDIR}/
 }
 
 inherit native
