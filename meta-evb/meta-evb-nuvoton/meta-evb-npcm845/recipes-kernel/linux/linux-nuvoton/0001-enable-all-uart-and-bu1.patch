@@ -1,0 +1,62 @@
+From 6ecf0e3a790bfc9b58cf3ed3916609637e304d79 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Wed, 29 May 2024 15:33:26 +0800
+Subject: [PATCH] enable all uart and bu1
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ .../boot/dts/nuvoton/nuvoton-npcm845-evb.dts  | 21 ++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+index 888b037fb5b5..25d334387f7f 100644
+--- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
++++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+@@ -16,6 +16,9 @@ aliases {
+ 		serial1 = &serial1;
+ 		serial2 = &serial2;
+ 		serial3 = &serial3;
++		serial4 = &serial4;
++		serial5 = &serial5;
++		serial6 = &serial6;
+ 		ethernet0 = &gmac0;
+ 		ethernet1 = &gmac1;
+ 		ethernet2 = &gmac2;
+@@ -419,11 +422,23 @@ serial1: serial@1000 {
+ 			};
+ 
+ 			serial2: serial@2000 {
+-				status = "disabled";
++				status = "okay";
+ 			};
+ 
+ 			serial3: serial@3000 {
+-				status = "disabled";
++				status = "okay";
++			};
++
++			serial4: serial@4000 {
++				status = "okay";
++			};
++
++			serial5: serial@5000 {
++				status = "okay";
++			};
++
++			serial6: serial@6000 {
++				status = "okay";
+ 			};
+ 
+ 			rng: rng@b000 {
+@@ -576,7 +591,7 @@ mcu_flash {
+  	pinctrl: pinctrl@f0800000 {
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <
+-				&jtag2_pins
++				&bmcuart1_pins
+ 				&lpc_pins
+ 				&pin70_o
+ 				&pin108_slew
+-- 
+2.34.1
+
