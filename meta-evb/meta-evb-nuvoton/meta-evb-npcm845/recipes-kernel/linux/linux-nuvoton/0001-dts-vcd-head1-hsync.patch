@@ -1,0 +1,28 @@
+From a456867cc275d32532509547e5c05ff853e1d439 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Mon, 3 Jun 2024 09:19:43 +0800
+Subject: [PATCH] dts: vcd: head1+hsync
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+index 25d334387f7f..bd0de733430e 100644
+--- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
++++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+@@ -381,6 +381,10 @@ udc8:udc@f0838000 {
+ 
+ 		vcd: vcd@f0810000 {
+ 			status = "okay";
++			nuvoton,hsync-mode;
++			nuvoton,hsync-delay-add = <0>;
++			nuvoton,vsync-delay-add = <0>;
++			nuvoton,use-head1-source;
+ 		};
+ 
+ 		ece: video-codec@f0820000 {
+-- 
+2.34.1
+

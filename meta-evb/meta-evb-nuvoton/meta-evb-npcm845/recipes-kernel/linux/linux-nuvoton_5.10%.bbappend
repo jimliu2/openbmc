@@ -4,4 +4,5 @@ SRC_URI:append:evb-npcm845 = " file://evb-npcm845.cfg"
 SRC_URI:append:evb-npcm845 = " file://enable-v4l2.cfg"
 
 SRC_URI:append:evb-npcm845 = " file://0001-dts-nuvoton-evb-npcm845-support-openbmc-partition.patch"
-SRC_URI:append:evb-npcm845 = " file://0001-enable-all-uart-and-bu1.patch"
+SRC_URI:append:evb-npcm845 = " file://0001-dts-vcd-head1-hsync.patch"
+SRC_URI:append:evb-npcm845 = " file://019-DE-media-nuvoton-hsync-dvo-dynamic-adjustment.patch"
