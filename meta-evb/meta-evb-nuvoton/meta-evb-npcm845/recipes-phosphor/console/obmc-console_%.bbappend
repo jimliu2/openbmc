@@ -27,7 +27,7 @@ FILES:${PN}:append:evb-npcm845 = " ${systemd_system_unitdir}/host-console-journa
 
 
 # Declare port spcific conf and service files
-HOST_CONSOLE_TTY = "ttyS1"
+HOST_CONSOLE_TTY = "ttyS1 ttyS2 ttyS3"
 CONSOLE_CONF_FMT = "file://server.{0}.conf"
 SRC_URI:append:evb-npcm845 = " ${@compose_list(d, 'CONSOLE_CONF_FMT', 'HOST_CONSOLE_TTY')}"
 CONSOLE_SSH_SOCKET_FILE_FMT = "file://${PN}-{0}-ssh.socket"

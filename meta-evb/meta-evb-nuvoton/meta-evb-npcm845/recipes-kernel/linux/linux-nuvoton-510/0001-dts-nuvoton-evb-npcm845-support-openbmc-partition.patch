@@ -43,7 +43,7 @@ index b568f8b04aec..8be09d21f60a 100644
 -						reg = <0x0140000 0xC0000>;
 -						};
 +					};
-+					u-boot-env@1c0000{
++					u-boot-env@7c0000{
 +						label = "u-boot-env";
 +						reg = <0x007C0000 0x00040000>;
 +					};
@@ -72,7 +72,7 @@ index b568f8b04aec..8be09d21f60a 100644
 -						reg = <0x1300000 0x0>;
 +						reg = <0x00800000 0x00800000>;
 +					};
-+					rofs@c00000 {
++					rofs@1000000 {
 +						label = "rofs";
 +						reg = <0x01000000 0x02C00000>;
 +					};
