@@ -10,3 +10,4 @@ SRC_URI:append:evb-npcm845 = " file://wdt.cfg"
 
 #SRC_URI:append:evb-npcm845 = " file://0001-board-nuvoton-arbel-add-spix-init.patch"
 SRC_URI:append:evb-npcm845 = " file://0002-Enable-openbmc-copy-base-file-to-ram-feature.patch"
+SRC_URI:append:evb-npcm845 = " file://0001-uart2-clock-source-to-24Mhz.patch"

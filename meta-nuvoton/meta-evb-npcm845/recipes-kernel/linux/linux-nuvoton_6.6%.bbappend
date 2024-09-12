@@ -23,6 +23,10 @@ SRC_URI:append:evb-npcm845 = " file://0002-dts-mctp-i3c-controller.patch"
 SRC_URI:append:evb-npcm845 = " file://0004-dts-evb-npcm845-enable-udc8.patch"
 SRC_URI:append:evb-npcm845 = " file://mctp.cfg"
 
+
+SRC_URI:append:evb-npcm845 = " file://0001-dts-arm64-npcm845-evb-enable-all-uarts.patch"
+SRC_URI:append:evb-npcm845 = " file://0001-dts-arm64-npcm845-evb-disable-fiu-drd-and-decrease-i.patch"
+
 # Support af_mctp over pcie vdm
 # SRC_URI:append:evb-npcm845 = " file://mctp_vdm.cfg"
 # SRC_URI:append:evb-npcm845 = " file://0001-kernel-dts-support-for-MCTP-verification.patch"
@@ -33,3 +37,8 @@ SRC_URI:append:evb-npcm845 = " file://mctp.cfg"
 
 # for npcm bic
 # SRC_URI:append:evb-npcm845 = " file://0001-i3c-master-svc-add-delay-for-NPCM-BIC.patch"
+
+SRC_URI:append:evb-npcm845 = " file://0001-usb-Add-generic-MCTP-include.patch"
+SRC_URI:append:evb-npcm845 = " file://0002-net-mctp-Add-MCTP-USB-transport-driver.patch"
+SRC_URI:append:evb-npcm845 = " file://0003-usb-gadget-Add-MCTP-USB-function.patch"
+SRC_URI:append:evb-npcm845 = " file://0004-usb-gadget-mctp-defer-tx-to-batch.patch"

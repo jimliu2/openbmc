@@ -4,6 +4,7 @@ SRC_URI:append = " \
     file://blacklist.json \
     file://baseboard.fru.bin \
     file://nuvoton_npcm8xx_evb.json \
+    file://npcm400_evb.json \
     "
 
 do_install:append () {
@@ -13,4 +14,6 @@ do_install:append () {
     install -d ${D}${datadir}/entity-manager
     install -m 0644 -D ${WORKDIR}/nuvoton_npcm8xx_evb.json \
         ${D}${datadir}/entity-manager/configurations/nuvoton_npcm8xx_evb.json
+    install -m 0644 -D ${WORKDIR}/npcm400_evb.json \
+        ${D}${datadir}/entity-manager/configurations/nnpcm400_evb.json        
 }

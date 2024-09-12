@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Set mctpi2c/mctpi3c link up and assign local address.
+localEid=8
+
+
+mctp link set mctpi3c0 up
+mctp addr add ${localEid} dev mctpi3c0
+

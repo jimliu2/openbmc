@@ -1,0 +1,57 @@
+From a4b9e8886a694b52acdd529fde3493c26c12ab11 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Wed, 11 Sep 2024 14:53:35 +0800
+Subject: [PATCH] dts: arm64: npcm845 evb: enable all uarts
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ .../boot/dts/nuvoton/nuvoton-npcm845-evb.dts  | 26 +++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+index 00504290b251..c543b673a5bb 100644
+--- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
++++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+@@ -12,6 +12,11 @@ / {
+ 
+ 	aliases {
+ 		serial0 = &serial0;
++		serial1 = &serial1;
++		serial2 = &serial2;
++		serial3 = &serial3;
++		serial4 = &serial4;
++		serial5 = &serial5;
+ 		ethernet0 = &gmac0;
+ 		ethernet1 = &gmac1;
+ 		ethernet2 = &gmac2;
+@@ -235,6 +240,27 @@ &serial0 {
+ 	status = "okay";
+ };
+ 
++&serial1 {
++	status = "okay";
++};
++
++&serial2 {
++	status = "okay";
++};
++
++&serial3 {
++	status = "okay";
++};
++
++&serial4 {
++	status = "okay";
++};
++
++&serial5 {
++	status = "okay";
++};
++
++
+ &fiu0 {
+ 	status = "okay";
+ 	spi-nor@0 {
+-- 
+2.34.1
+

@@ -1,0 +1,27 @@
+From 612ae8cea35ed6dc9aa12980f8eabf5f0842f1e6 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Tue, 10 Sep 2024 15:26:05 +0800
+Subject: [PATCH] uart2 clock source to 24Mhz
+
+---
+ arch/arm/dts/nuvoton-npcm845-evb.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/dts/nuvoton-npcm845-evb.dts b/arch/arm/dts/nuvoton-npcm845-evb.dts
+index 3007d04267..3edb320c66 100644
+--- a/arch/arm/dts/nuvoton-npcm845-evb.dts
++++ b/arch/arm/dts/nuvoton-npcm845-evb.dts
+@@ -101,6 +101,10 @@
+ 
+ &serial0 {
+ 	status = "okay";
++	clock-frequency = <24000000>;
++	assigned-clocks = <&clk NPCM8XX_CLK_UART2>;
++	assigned-clock-parents = <&clk NPCM8XX_CLK_PLL2DIV2>;
++	assigned-clock-rates = <24000000>;
+ };
+ 
+ &watchdog1 {
+-- 
+2.34.1
+
