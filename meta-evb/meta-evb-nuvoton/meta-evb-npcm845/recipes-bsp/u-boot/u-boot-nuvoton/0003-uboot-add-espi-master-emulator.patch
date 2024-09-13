@@ -1,0 +1,1056 @@
+From dc6bb81d69c02df7dc676fccbe421f8fa531e310 Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Mon, 9 Sep 2024 11:12:35 +0800
+Subject: [PATCH] uboot: add espi master emulator
+
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
+---
+ arch/arm/dts/nuvoton-npcm845-evb.dts     |  14 +
+ arch/arm/dts/nuvoton-npcm845-pincfg.dtsi |  45 ++
+ cmd/Kconfig                              |   5 +
+ cmd/Makefile                             |   1 +
+ cmd/espi.c                               | 924 +++++++++++++++++++++++
+ 5 files changed, 989 insertions(+)
+ create mode 100644 cmd/espi.c
+
+diff --git a/arch/arm/dts/nuvoton-npcm845-evb.dts b/arch/arm/dts/nuvoton-npcm845-evb.dts
+index 3007d04267..d824516c69 100644
+--- a/arch/arm/dts/nuvoton-npcm845-evb.dts
++++ b/arch/arm/dts/nuvoton-npcm845-evb.dts
+@@ -359,6 +359,20 @@
+ 	status = "okay";
+ };
+ 
++&host_intf {
++	pinctrl-names = "default";
++	pinctrl-0 = <
++		&gpio240o_pins	//nCS
++		&gpio241o_pins	//clk
++		&gpio242o_pins	//IO0
++		&gpio243o_pins	//IO1
++		&gpio244o_pins	//IO2
++		&gpio245o_pins	//IO3
++		&gpio246o_pins	//nRST
++		&gpio247o_pins	//nAlert
++		>;
++};
++
+ &pinctrl {
+         pinctrl-names = "default";
+         pinctrl-0 = <
+diff --git a/arch/arm/dts/nuvoton-npcm845-pincfg.dtsi b/arch/arm/dts/nuvoton-npcm845-pincfg.dtsi
+index 65de96b1f5..c7f8bf68ef 100644
+--- a/arch/arm/dts/nuvoton-npcm845-pincfg.dtsi
++++ b/arch/arm/dts/nuvoton-npcm845-pincfg.dtsi
+@@ -2003,5 +2003,50 @@
+ 			bias-disable;
+ 			output-high;
+ 		};
++		gpio235o_pins: gpio235o-pins {
++			pins = "GPIO235/PWM11/SMB20_SDA";
++			bias-disable;
++			output-high;
++		};
++		gpio240o_pins: gpio240o-pins {
++			pins = "GPIO240/I3C0_SCL";
++			bias-disable;
++			output-high;
++		};
++		gpio241o_pins: gpio241o-pins {
++			pins = "GPIO241/I3C0_SDA";
++			bias-disable;
++			output-high;
++		};
++		gpio242o_pins: gpio242o-pins {
++			pins = "GPIO242/I3C1_SCL";
++			bias-disable;
++			output-high;
++		};
++		gpio243o_pins: gpio243o-pins {
++			pins = "GPIO243/I3C1_SDA";
++			bias-disable;
++			output-high;
++		};
++		gpio244o_pins: gpio244o-pins {
++			pins = "GPIO244/I3C2_SCL";
++			bias-disable;
++			output-high;
++		};
++		gpio245o_pins: gpio245o-pins {
++			pins = "GPIO245/I3C2_SDA";
++			bias-disable;
++			output-high;
++		};
++		gpio246o_pins: gpio246o-pins {
++			pins = "GPIO246/I3C3_SCL";
++			bias-disable;
++			output-high;
++		};
++		gpio247o_pins: gpio247o-pins {
++			pins = "GPIO247/I3C3_SDA";
++			bias-disable;
++			output-high;
++		};
+ 	};
+ };
+diff --git a/cmd/Kconfig b/cmd/Kconfig
+index d7d4e37b5e..61da330132 100644
+--- a/cmd/Kconfig
++++ b/cmd/Kconfig
+@@ -2131,6 +2131,11 @@ config CMD_EXCEPTION
+ 	help
+ 	  Enable the 'exception' command which allows to raise an exception.
+ 
++config CMD_ESPI
++	bool "Enable eSPI master emulator"
++	help
++	  Enable test commands for eSPI Master Emulator.
++
+ config CMD_GFX
+ 	bool "Enable GFX test"
+ 	help
+diff --git a/cmd/Makefile b/cmd/Makefile
+index afb8c5f61c..6a6b0cf9b8 100644
+--- a/cmd/Makefile
++++ b/cmd/Makefile
+@@ -76,6 +76,7 @@ endif
+ endif
+ obj-$(CONFIG_CMD_ELF) += elf.o
+ obj-$(CONFIG_CMD_EROFS) += erofs.o
++obj-$(CONFIG_CMD_ESPI) += espi.o
+ obj-$(CONFIG_HUSH_PARSER) += exit.o
+ obj-$(CONFIG_CMD_EXT4) += ext4.o
+ obj-$(CONFIG_CMD_EXT2) += ext2.o
+diff --git a/cmd/espi.c b/cmd/espi.c
+new file mode 100644
+index 0000000000..f52fceb92c
+--- /dev/null
++++ b/cmd/espi.c
+@@ -0,0 +1,924 @@
++#include <stdlib.h>
++#include <command.h>
++#include <common.h>
++#include <dm.h>
++#include <rand.h>
++#include <asm/io.h>
++#include <asm/gpio.h>
++#include <linux/delay.h>
++#include <linux/bitfield.h>
++#include <u-boot/crc.h>
++
++
++/* SIO base address */
++#define SIO_IDX		0x4e
++#define SIO_DATA	0x4f
++
++/*
++ * GPIO Assign Note:
++ * eSPI_CLK and eSPI_IO signals must assign on the same GPIO port.
++ */
++#define PORT_BASE	0xF0017000	// GPIO7
++#define PORT_OUT	(PORT_BASE + 0xC)
++#define PORT_IN		(PORT_BASE + 0x4)
++#define PORT_OES	(PORT_BASE + 0x70)
++#define PORT_IEM	(PORT_BASE + 0x58)
++
++#define eSPI_nCS	BIT(16) //240
++#define eSPI_CLK	BIT(17) //241
++#define eSPI_IO0	BIT(18) //242
++#define eSPI_IO1	BIT(19) //243
++#define eSPI_IO2	BIT(20) //244
++#define eSPI_IO3	BIT(21) //245
++#define eSPI_nRST	BIT(22) //246
++#define eSPI_nALERT	BIT(23) //247
++
++// eSPI command
++#define CMD_SET_CONFIGURATION	0x22
++#define CMD_GET_CONFIGURATION	0x21
++#define CMD_PUT_VWIRE		0x04
++#define CMD_GET_VWIRE		0x05
++#define CMD_GET_GET_STATUS	0x25
++#define CMD_RESET		0xFF
++
++// Peripheral Channel Commands
++#define CMD_PUT_PC		0x00
++#define CMD_GET_PC		0x01
++#define CMD_PUT_NP		0x02
++#define CMD_GET_NP		0x03
++#define CMD_PUT_IORD_SHORT	0x40
++#define CMD_PUT_IOWR_SHORT	0x44
++
++// eSPI response
++#define RESP_ACCEPT		0x08
++#define RESP_WAIT		0x0F
++#define RESP_FATAL_ERROR	0x03
++#define RESP_NO_RESP		0xFF
++
++// Status register
++#define STATUS_VW_AVAIL		BIT(6)
++
++#define STATUS_OK		0
++#define STATUS_ERR		1
++#define MAX_RESP_LEN		8
++
++// KCS defines
++#define KCS_STATUS_REG		0xCA3
++#define   KCS_STATUS_OBF	BIT(0)
++#define   KCS_STATUS_IBF	BIT(1)
++#define   KCS_STATUS_CD		BIT(3)
++#define   KCS_STATE(x) FIELD_GET(GENMASK(7, 6), (x))
++#define   KCS_STATE_WRITE(x) (KCS_STATE(x) == 2)
++#define   KCS_STATE_READ(x) (KCS_STATE(x) == 1)
++#define   KCS_STATE_IDLE(x) (KCS_STATE(x) == 0)
++#define   KCS_STATE_ERR(x) (KCS_STATE(x) == 3)
++#define KCS_CMD_REG		0xCA3
++#define KCS_DATA_REG		0xCA2
++#define KCS_CMD_GET_STATUS	0x60
++#define KCS_CMD_ABORT		0x60
++#define KCS_CMD_WRITE_START	0x61
++#define KCS_CMD_WRITE_END	0x62
++#define KCS_CMD_READ		0x68
++
++struct get_configuration_req {
++	u8 cmd;
++	u8 addr[2];
++	u8 crc;
++};
++
++struct get_configuration_resp {
++	u8 code;
++	u32 data;
++	u16 status;
++	u8 crc;
++} __attribute__((__packed__));
++
++struct set_configuration_req {
++	u8 cmd;
++	u8 addr[2];
++	u8 data[4];
++	u8 crc;
++};
++
++struct espi_common_resp {
++	u8 code;
++	u16 status;
++	u8 crc;
++} __attribute__((__packed__));
++
++struct get_vwire_req {
++	u8 cmd;
++	u8 crc;
++} __attribute__((__packed__));
++
++struct get_vwire_resp {
++	u8 code;
++	u8 len;
++	u8 index;
++	u8 data;
++	u16 status;
++	u8 crc;
++} __attribute__((__packed__));
++
++struct put_vwire_req {
++	u8 cmd;
++	u8 len;
++	u8 index;
++	u8 data;
++	u8 crc;
++} __attribute__((__packed__));
++
++struct put_iowr_req {
++	u8 cmd;
++	u8 addr[2];
++	u8 data_crc[5];
++} __attribute__((__packed__));
++
++struct put_iord_req {
++	u8 cmd;
++	u8 addr[2];
++	u8 crc;
++} __attribute__((__packed__));
++
++struct put_iord_resp {
++	u8 code;
++	u32 data;
++	u16 status;
++	u8 crc;
++} __attribute__((__packed__));
++
++static u32 espi_port_state = 0;
++static bool debug = true;
++
++void inline espi_port_update(u32 set, u32 clear)
++{
++	espi_port_state |= set;
++	espi_port_state &= ~clear;
++	writel(espi_port_state, PORT_OUT);
++}
++void inline espi_port_set(u32 state)
++{
++	espi_port_state |= state;
++	writel(espi_port_state, PORT_OUT);
++}
++void inline espi_port_clear(u32 state)
++{
++	espi_port_state &= ~state;
++	writel(espi_port_state, PORT_OUT);
++}
++
++static void espi_init(void)
++{
++	printf("espi: init gpios\n");
++	// initial state: nCS high, nRST high, CLK low
++	espi_port_state = readl(PORT_OUT);
++	espi_port_update(eSPI_nCS | eSPI_nRST | eSPI_IO0, 0);
++	// set output enable
++	writel(eSPI_nCS | eSPI_CLK | eSPI_IO0 | eSPI_nRST, PORT_OES);
++	// set input enable
++	writel(eSPI_IO1, PORT_IEM);
++
++	printf("espi: assert nRST\n");
++	// eSPI reset
++	udelay(100);
++	espi_port_update(0, eSPI_nRST);
++	udelay(100);
++	espi_port_update(eSPI_nRST, 0);
++	udelay(100);
++}
++
++/*
++ * The Serial Clock must be low at the assertion edge of the Chip Select# while eSPI
++ * Reset# has been de-asserted. The first data is launched from master while the serial
++ * clock is still low and sampled on the first rising edge of the clock by slave. Subsequent
++ * data is launched on the falling edge of the clock from master and sampled on the
++ * rising edge of the clock by slave. The data is launched from slave on the falling edge
++ * of the clock. The master could implement a more flexible sampling scheme since it
++ * controls the clock.
++ */
++static void espi_sendbyte(u8 data)
++{
++	int i;
++	u32 val = 0;
++
++	if (data & BIT(7))
++		espi_port_update(eSPI_IO0, eSPI_CLK); //clk_low + IO0
++	else
++		espi_port_clear(eSPI_IO0 | eSPI_CLK); //clk_low
++
++	espi_port_set(eSPI_CLK); // clk_high
++	for (i = 6; i >= 0; i--) {
++		val &= ~eSPI_CLK;
++		if (data & BIT(i))
++			espi_port_update(eSPI_IO0, eSPI_CLK); //clk_low + IO0
++		else
++			espi_port_clear(eSPI_IO0 | eSPI_CLK); //clk_low
++		espi_port_set(eSPI_CLK); // clk_high
++	}
++	espi_port_clear(eSPI_CLK); //clk_low
++}
++
++static u8 espi_recv_byte_single(void)
++{
++	// Clock start high -- ended at high. 
++	int i;
++	u32 val;
++	u8 in = 0;
++
++	for (i = 7; i >= 0; i--) {
++		//writel(eSPI_CLK | eSPI_IO0, PORT_OUT); // clk_high
++		espi_port_set(eSPI_CLK | eSPI_IO0); // clk_high
++		val = readl(PORT_IN);
++		if (val & eSPI_IO1)
++			in |= BIT(i);
++		//writel(eSPI_IO0, PORT_OUT); // clk_low
++		espi_port_clear(eSPI_CLK);
++	}
++	return in;
++}
++static void espi_send(u8 *out, int len)
++{
++	int i;
++
++	for (i = 0; i < len; i++)
++		espi_sendbyte(out[i]);
++}
++
++static int espi_wait_response(u8 *code)
++{
++	int count = 16;
++	int rc = 0;
++
++	do {
++		*code = espi_recv_byte_single();
++		if (*code != RESP_WAIT && *code != RESP_ACCEPT) {
++			rc = -EIO;
++			break;
++		}
++		if (count-- == 0 && *code != RESP_ACCEPT) {
++			rc = -ETIMEDOUT;
++			break;
++		}
++	} while (*code != RESP_ACCEPT);
++
++	return rc;
++}
++
++static void espi_read_status(u16 *status)
++{
++	u8 *in = (u8 *)status;
++
++	*in++ = espi_recv_byte_single();
++	*in = espi_recv_byte_single();
++	espi_recv_byte_single(); // read crc
++}
++
++static u16 respi_read_response(u8 *resp, int len)
++{
++	u16 status = STATUS_OK;
++	int i;
++
++	if (espi_wait_response(resp)) {
++		espi_read_status(&status);
++		//printf("espi response error: code=0x%02x, status=0x%04x\n", *resp, status);
++		return status;
++	}
++
++	resp++;
++	len--;
++	for (i = 0; i < len; i++, resp++)
++		*resp = espi_recv_byte_single();
++
++	return status;
++}
++
++/*
++After the last bit of the Command Phase has been sent out on the data lines, the data
++lines enter the Turn-Around window. The eSPI master is required to drive all the data
++lines to logic ¿1¿ for the first clock of the Turn-Around window and tri-state the data
++lines thereafter. The number of clocks for the Turn-Around window is a fixed 2 serial
++ */
++static void espi_tar(void)
++{
++	espi_port_set(eSPI_CLK | eSPI_IO0);
++	espi_port_clear(eSPI_CLK);
++	espi_port_set(eSPI_CLK);
++	espi_port_clear(eSPI_CLK);
++}
++
++static int espi_get_configuration(u16 addr, u8 *in)
++{
++	struct get_configuration_req req;
++	struct get_configuration_resp *resp = (struct get_configuration_resp *)in;
++	u16 status;
++
++	req.cmd = CMD_GET_CONFIGURATION;
++	req.addr[0] = addr >> 8;
++	req.addr[1] = addr & 0xFF;
++	req.crc = crc8(0, (u8 *)&req, sizeof(req) - 1);
++
++	//CS_low, CLK_low, IO0
++	espi_port_update(eSPI_IO0, eSPI_nCS | eSPI_CLK);
++
++	espi_send((u8 *)&req, sizeof(req));
++	espi_tar();
++	status = respi_read_response((u8 *)resp, sizeof(*resp));
++	espi_port_set(eSPI_nCS);
++
++	if (status) {
++		printf("%s: espi response error: code=0x%02x, status=0x%04x\n",
++			__func__, resp->code, status);
++		resp->status = status;
++		return STATUS_ERR;
++	}
++	printf("get_config(%02x)=0x%08x\n", addr, resp->data);
++	//printf("status= %04x\n", resp->status);
++
++	return STATUS_OK;
++}
++
++static int espi_set_configuration(u16 addr, u32 data, u8 *in)
++{
++	struct set_configuration_req req;
++	struct espi_common_resp *resp = (struct espi_common_resp *)in;
++	u16 status;
++
++	printf("set_config(%02x)=0x%08x\n", addr, data);
++	req.cmd = CMD_SET_CONFIGURATION;
++	req.addr[0] = addr >> 8;
++	req.addr[1] = addr & 0xFF;
++	req.data[0] = data & 0xFF;
++	req.data[1] = (data >> 8) & 0xFF;
++	req.data[2] = (data >> 16) & 0xFF;
++	req.data[3] = (data >> 24) & 0xFF;
++	req.crc = crc8(0, (u8 *)&req, sizeof(req) - 1);
++
++	//CS_low, CLK_low, IO0
++	espi_port_update(eSPI_IO0, eSPI_nCS | eSPI_CLK);
++
++	espi_send((u8 *)&req, sizeof(req));
++	espi_tar();
++	status = respi_read_response((u8 *)resp, sizeof(*resp));
++	espi_port_set(eSPI_nCS);
++	if (status) {
++		printf("%s: espi response error: code=0x%02x, status=0x%04x\n",
++			__func__, resp->code, status);
++		resp->status = status;
++		return STATUS_ERR;
++	}
++
++	return STATUS_OK;
++}
++
++static int espi_get_vwire(u8 *in)
++{
++	struct get_vwire_req req;
++	struct get_vwire_resp *resp = (struct get_vwire_resp *)in;
++	u16 status;
++
++	req.cmd = CMD_GET_VWIRE;
++	req.crc = crc8(0, &req.cmd, 1);
++
++	//CS_low, CLK_low, IO0
++	espi_port_update(eSPI_IO0, eSPI_nCS | eSPI_CLK);
++
++	espi_send((u8 *)&req, sizeof(req));
++	espi_tar();
++	status = respi_read_response((u8 *)resp, sizeof(*resp));
++	espi_port_set(eSPI_nCS);
++
++	if (status) {
++		printf("%s: espi response error: code=0x%02x, status=0x%04x\n",
++			__func__, resp->code, status);
++		resp->status = status;
++		return STATUS_ERR;
++	} else {
++		printf("get_vwire: ");
++		printf("index(%d)=0x%02x\n", resp->index, resp->data);
++		//printf("status=%04x\n", resp->status);
++	}
++	return STATUS_OK;
++}
++
++static int espi_put_vwire(u8 index, u8 data, u8 *in)
++{
++	struct put_vwire_req req;
++	struct espi_common_resp *resp = (struct espi_common_resp *)in;
++	u16 status;
++
++	printf("put_vwire: index(%d)=0x%02x\n", index, data);
++	req.cmd = CMD_PUT_VWIRE;
++	req.len = 0;
++	req.index = index;
++	req.data = data;
++	req.crc = crc8(0, (u8 *)&req, sizeof(req) - 1);
++
++	//CS_low, CLK_low, IO0
++	espi_port_update(eSPI_IO0, eSPI_nCS | eSPI_CLK);
++
++	espi_send((u8 *)&req, sizeof(req));
++	espi_tar();
++	status = respi_read_response((u8 *)resp, sizeof(*resp));
++	espi_port_set(eSPI_nCS);
++	if (status) {
++		printf("%s: espi response error: code=0x%02x, status=0x%04x\n",
++			__func__, resp->code, status);
++		resp->status = status;
++		return STATUS_ERR;
++	}
++	return STATUS_OK;
++}
++
++static int espi_put_iowr(u16 addr, u8 *data, int count, u8 *in)
++{
++	struct put_iowr_req req;
++	struct espi_common_resp *resp = (struct espi_common_resp *)in;
++	u16 status;
++	int i;
++
++	if (debug) {
++		printf("IO wr: addr(0x%x)=", addr);
++		for (i = count - 1; i >= 0; i--)
++			printf("%02x", data[i]);
++		printf("\n");
++	}
++
++	req.cmd = CMD_PUT_IOWR_SHORT | ((count - 1) & 0x3);
++	req.addr[0] = addr >> 8;
++	req.addr[1] = addr & 0xFF;
++	for (i = 0; i < count; i++)
++		req.data_crc[i] = data[i];
++	req.data_crc[i] = crc8(0, (u8 *)&req, count + 3);
++
++	//CS_low, CLK_low, IO0
++	espi_port_update(eSPI_IO0, eSPI_nCS | eSPI_CLK);
++
++	espi_send((u8 *)&req, count + 4);
++	espi_tar();
++	status = respi_read_response((u8 *)resp, sizeof(*resp));
++	espi_port_set(eSPI_nCS);
++	if (status) {
++		printf("%s: espi response error: code=0x%02x, status=0x%04x\n",
++			__func__, resp->code, status);
++		resp->status = status;
++		return STATUS_ERR;
++	}
++	return STATUS_OK;
++}
++
++static int espi_put_iord(u16 addr, int count, u8 *in)
++{
++	struct put_iord_req req;
++	struct put_iord_resp *resp = (struct put_iord_resp *)in;
++	u16 status;
++
++	req.cmd = CMD_PUT_IORD_SHORT | ((count - 1) & 0x3);
++	req.addr[0] = addr >> 8;
++	req.addr[1] = addr & 0xFF;
++	req.crc = crc8(0, &req.cmd, 3);
++
++	//CS_low, CLK_low, IO0
++	espi_port_update(eSPI_IO0, eSPI_nCS | eSPI_CLK);
++
++	espi_send((u8 *)&req, sizeof(req));
++	espi_tar();
++	status = respi_read_response((u8 *)resp, count + 4);
++	espi_port_set(eSPI_nCS);
++
++	if (status) {
++		printf("%s: espi response error: code=0x%02x, status=0x%04x\n",
++			__func__, resp->code, status);
++		resp->status = status;
++		return STATUS_ERR;
++	}
++	if (debug) {
++		printf("IO rd: port[0x%x]=", addr);
++		if (count == 1)
++			printf("%02x\n", resp->data & 0xFF);
++		else if (count == 2)
++			printf("%04x\n", resp->data & 0xFFFF);
++		else if (count == 4)
++			printf("%08x\n", resp->data);
++	}
++	//printf("status=%02x%02x\n", resp.status[1], resp.status[0]);
++	return STATUS_OK;
++}
++
++static int espi_iowr8(u16 addr, u8 data)
++{
++	u8 resp[MAX_RESP_LEN];
++
++	return espi_put_iowr(addr, &data, 1, resp);
++}
++#if 0
++static int espi_iowr16(u16 addr, u16 data)
++{
++	u8 resp[MAX_RESP_LEN];
++
++	return espi_put_iowr(addr, (u8 *)&data, 2, resp);
++}
++static int espi_iowr32(u16 addr, u32 data)
++{
++	u8 resp[MAX_RESP_LEN];
++
++	return espi_put_iowr(addr, (u8 *)&data, 2, resp);
++}
++static int espi_iord8(u16 addr, u8 *data)
++{
++	struct put_iord_resp resp;
++	int ret;
++
++	ret = espi_put_iord(addr, 1, (u8 *)&resp);
++	*data = (u8)(resp.data & 0xFF);
++
++	return ret;
++}
++static int espi_iord16(u16 addr, u16 *data)
++{
++	struct put_iord_resp resp;
++	int ret;
++
++	ret = espi_put_iord(addr, 2, (u8 *)&resp);
++	*data = (u16)(resp.data & 0xFFFF);
++
++	return ret;
++}
++static int espi_iord32(u16 addr, u32 *data)
++{
++	struct put_iord_resp resp;
++	int ret;
++
++	ret = espi_put_iord(addr, 4, (u8 *)&resp);
++	*data = resp.data;
++
++	return ret;
++}
++#endif
++
++static u8 kcs_read_status(void)
++{
++	struct put_iord_resp resp;
++	//u8 cmd = KCS_CMD_GET_STATUS;
++
++	//espi_put_iowr(KCS_CMD_REG, &cmd, 1, (u8 *)&resp);
++	espi_put_iord(KCS_STATUS_REG, 1, (u8 *)&resp);
++	return (resp.data & 0xFF);
++}
++
++/* wait for IBF = 0, means host can write data to BMC */
++static int kcs_wait_ibf(u8 *status)
++{
++	*status = 0xC0; //STATE_ERR
++	int count = 100;
++	u8 data;
++
++	while (count--) {
++		data = kcs_read_status();
++		if ((data & KCS_STATUS_IBF) == 0) {
++			*status = data;
++			return 0;
++		}
++		mdelay(1);
++	}
++
++	return -ETIMEDOUT;
++}
++
++/* wait for OBF = 1, means host can read data from BMC */
++static int kcs_wait_obf(u8 *status)
++{
++	*status = 0xC0; //STATE_ERR
++	int count = 100;
++	u8 data;
++
++	while (count--) {
++		data = kcs_read_status();
++		if (data & KCS_STATUS_OBF) {
++			*status = data;
++			return 0;
++		}
++		mdelay(1);
++	}
++
++	return -ETIMEDOUT;
++}
++/* clear OBF by read data register */
++static inline void kcs_clear_obf(void)
++{
++	struct put_iord_resp resp;
++
++	espi_put_iord(KCS_DATA_REG, 1, (u8 *)&resp);
++}
++
++static inline void kcs_write_cmd(u8 cmd)
++{
++	u8 resp[MAX_RESP_LEN];
++
++	espi_put_iowr(KCS_CMD_REG, &cmd, 1, resp);
++}
++
++static void kcs_write_byte(u8 data)
++{
++	u8 resp[MAX_RESP_LEN];
++
++	espi_put_iowr(KCS_DATA_REG, &data, 1, resp);
++}
++
++static u8 kcs_read_byte(void)
++{
++	struct put_iord_resp resp;
++
++	espi_put_iord(KCS_DATA_REG, 1, (u8 *)&resp);
++	return (u8)(resp.data & 0xFF);
++}
++
++/*
++ * host to BMC
++ * 1. write WRITE_START to CMD register
++ * 2. write data to DATA register
++ * 3. write WRITE_END to CMD register before send last byte
++ * 4. write last byte to DATA register
++ */
++static int kcs_transfer(u8 *req, int req_len, u8 *resp, int resp_len)
++{
++	u8 status;
++	int read_len = 0;
++	int i;
++
++	/* WRITE state */
++	if (kcs_wait_ibf(&status)) {
++		printf("IBF is not 0\n");
++		return -EIO;
++	}
++	kcs_clear_obf();
++	kcs_write_cmd(KCS_CMD_WRITE_START);
++	kcs_wait_ibf(&status);
++	if (!KCS_STATE_WRITE(status)) {
++		printf("WRITE_START error\n");
++		goto err_exit;
++	}
++	kcs_clear_obf();
++	for (i = 0; i < req_len - 1; i++) {
++		kcs_write_byte(req[i]);
++		kcs_wait_ibf(&status);
++		if (!KCS_STATE_WRITE(status)) {
++			printf("write request error, status=%02x\n", status);
++			goto err_exit;
++		}
++		kcs_clear_obf();
++	}
++	kcs_write_cmd(KCS_CMD_WRITE_END);
++	kcs_wait_ibf(&status);
++	if (!KCS_STATE_WRITE(status)) {
++		printf("WRITE_END error\n");
++		goto err_exit;
++	}
++	kcs_clear_obf();
++	kcs_write_byte(req[req_len - 1]);
++
++	/* READ state */
++	for (i = 0; i < resp_len; i++) {
++		kcs_wait_ibf(&status);
++		if (!KCS_STATE_READ(status) && !KCS_STATE_IDLE(status)) {
++			printf("READ state error\n");
++			goto err_exit;
++		}
++		if (KCS_STATE_IDLE(status)) {
++			kcs_wait_obf(&status);
++			kcs_clear_obf();
++			break;
++		}
++		kcs_wait_obf(&status);
++		if (KCS_STATE_ERR(status)) {
++			printf("read data error\n");
++			break;
++		}
++		*resp++ = kcs_read_byte();
++		if (++read_len < resp_len)
++			kcs_write_byte(KCS_CMD_READ);
++	}
++	return read_len;
++
++err_exit:
++	kcs_wait_ibf(&status);
++	kcs_write_cmd(KCS_CMD_ABORT);
++	kcs_wait_ibf(&status);
++	kcs_clear_obf();
++	return -EIO;
++
++}
++
++static int do_kcs_test(void)
++{
++	u8 req[2];
++	u8 resp[32];
++	int read_len;
++	int i;
++	bool debug_save = debug;
++
++	/* get device id */
++	req[0] = 0x18;
++	req[1] = 1;
++	debug = false;
++	read_len = kcs_transfer(req, 2, resp, 18);
++	debug = debug_save;
++
++	if (read_len < 0) {
++		printf("kcs transfer err\n");
++		return 0;
++	}
++	for (i = 0; i < read_len; i++)
++		printf("%02x ", resp[i]);
++	printf("\n");
++
++	return 0;
++}
++
++static int do_espi_master_start(void)
++{
++	u8 resp[MAX_RESP_LEN];
++	//struct espi_common_resp *common_resp = (struct espi_common_resp *)&resp[0];
++	struct get_configuration_resp *config_resp = (struct get_configuration_resp *)&resp[0];
++	//struct put_iord_resp *iord_resp = (struct put_iord_resp *)&resp[0];
++	//struct get_vwire_resp *vwire_resp = (struct get_vwire_resp *)&resp[0];
++	//u32 data;
++	//int ret;
++
++	espi_set_configuration(0x20, 0x00000001, resp);
++	espi_get_configuration(0x20, resp);
++	if (config_resp->status & STATUS_VW_AVAIL)
++		espi_get_vwire(resp);
++
++	espi_put_vwire(3, 0x33, resp);
++
++	printf("configure SP1\n");
++	espi_iowr8(SIO_IDX, 7);
++	espi_iowr8(SIO_DATA, 3);
++	// disable LDN
++	espi_iowr8(SIO_IDX, 0x30);
++	espi_iowr8(SIO_DATA, 0);
++	// set io addr 3f8
++	espi_iowr8(SIO_IDX, 0x60);
++	espi_iowr8(SIO_DATA, 3);
++	espi_iowr8(SIO_IDX, 0x61);
++	espi_iowr8(SIO_DATA, 0xf8);
++	// interrupt
++	espi_iowr8(SIO_IDX, 0x70);
++	espi_iowr8(SIO_DATA, 3);
++	// enable LDN
++	espi_iowr8(SIO_IDX, 0x30);
++	espi_iowr8(SIO_DATA, 1);
++	// enable access to control register
++	//espi_iowr8(SIO_IDX, 0xf0);
++	//espi_iowr8(SIO_DATA, 0xba);
++	// select bank1, divisor=1, baud=f_input/(16*divisor)
++	espi_iowr8(0x3fb, 0x80);
++	espi_iowr8(0x3f8, 1);
++	espi_iowr8(0x3f9, 0);
++	// select bank0, LCR=3(8 bit/1 stop/no parity)
++	espi_iowr8(0x3fb, 0x3);
++	espi_iowr8(0x3fc, 0);
++	espi_iowr8(0x3f9, 3);
++	espi_iowr8(0x3fa, 6);
++
++	printf("configure KCS1(IO base=0x%04x)\n", KCS_DATA_REG);
++	espi_iowr8(SIO_IDX, 7);
++	espi_iowr8(SIO_DATA, 0x11);
++	// set io addr 0ca2/0ca3
++	espi_iowr8(SIO_IDX, 0x60);
++	espi_iowr8(SIO_DATA, (KCS_DATA_REG >> 8) & 0xFF);
++	espi_iowr8(SIO_IDX, 0x61);
++	espi_iowr8(SIO_DATA, KCS_DATA_REG & 0xFF);
++	espi_iowr8(SIO_IDX, 0x62);
++	espi_iowr8(SIO_DATA, (KCS_CMD_REG >> 8) & 0xFF);
++	espi_iowr8(SIO_IDX, 0x63);
++	espi_iowr8(SIO_DATA, KCS_CMD_REG & 0xFF);
++	// enable LDN
++	espi_iowr8(SIO_IDX, 0x30);
++	espi_iowr8(SIO_DATA, 1);
++
++#if 0
++	// configure sp2
++	espi_iowr8(0x4e, 7);
++	espi_iowr8(0x4f, 2);
++	//espi_iord8(0x4f, (u8 *)&data);
++	// enable access to control register
++	espi_iowr8(0x4e, 0xf0);
++	espi_iowr8(0x4f, 0xba);
++	espi_iowr8(0x4e, 0x30);
++	espi_iowr8(0x4f, 1);
++	// select bank1, divisor=13, baud=24000000/(16*13)=115200
++	espi_iowr8(0x2fb, 0x80);
++	espi_iowr8(0x2f8, 0xd);
++	espi_iowr8(0x2f9, 0);
++	// select bank0, LCR=3(8 bit/1 stop/no parity)
++	espi_iowr8(0x2fb, 0x3);
++#endif
++	return 0;
++}
++
++static int do_espi_command(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
++{
++	u32 command, addr, index, data, count;
++	u8 resp[MAX_RESP_LEN];
++	int rc = 0;
++
++
++	if (argc < 2)
++		return CMD_RET_USAGE;
++
++	if (strcmp(argv[1], "start") == 0) {
++		espi_init();
++		return do_espi_master_start();
++	}
++	if (strcmp(argv[1], "init") == 0) {
++		espi_init();
++		return 0;
++	}
++	if (strcmp(argv[1], "kcstest") == 0) {
++		do_kcs_test();
++		return 0;
++	}
++
++	command=simple_strtoul(argv[1], NULL, 16);
++	if(command > 6)
++		return CMD_RET_USAGE;
++
++	if (espi_port_state == 0)
++		espi_init();
++
++	switch (command) {
++	case 1:
++		if (argc < 3)
++			return CMD_RET_USAGE;
++		addr=simple_strtoul(argv[2], NULL, 16);
++		espi_get_configuration(addr, resp);
++		break;
++	case 2:
++		if (argc < 4)
++			return CMD_RET_USAGE;
++		addr=simple_strtoul(argv[2], NULL, 16);
++		data=simple_strtoul(argv[3], NULL, 16);
++		espi_set_configuration(addr, data, resp);
++		break;
++	case 3:
++		espi_get_vwire(resp);
++		break;
++	case 4:
++		if (argc < 4)
++			return CMD_RET_USAGE;
++		index=simple_strtoul(argv[2], NULL, 16);
++		data=simple_strtoul(argv[3], NULL, 16);
++		espi_put_vwire(index, data, resp);
++		break;
++	case 5:
++		if (argc < 5)
++			return CMD_RET_USAGE;
++		addr=simple_strtoul(argv[2], NULL, 16);
++		data=simple_strtoul(argv[3], NULL, 16);
++		count=simple_strtoul(argv[4], NULL, 16);
++		if (count < 1 || count > 4)
++			return CMD_RET_USAGE;
++		espi_put_iowr(addr, (u8 *)&data, count, resp);
++		break;
++	case 6:
++		if (argc < 4)
++			return CMD_RET_USAGE;
++		addr=simple_strtoul(argv[2], NULL, 16);
++		count=simple_strtoul(argv[3], NULL, 16);
++		if (count < 1 || count > 4)
++			return CMD_RET_USAGE;
++		espi_put_iord(addr, count, resp);
++		break;
++	default:
++		rc = CMD_RET_USAGE;
++		break;
++	}
++	return (rc);
++}
++
++U_BOOT_CMD(
++	espi ,	5,	1,	do_espi_command,
++	"espi master command",
++	"<command> [<argument1>] [<argument2>] [<argument3>]\n"
++	"espi init	- init espi gpios and assert nRST\n"
++	"espi start	- start espi master auto config\n"
++	"espi kcstest	- do the kcs transfer\n"
++	"<command> \n"
++	"  1 -	get_configuration\n"
++	"  	<argument1> - address\n"
++	"  2 -	set_configuration.\n"
++	"  	<argument1> - address\n"
++	"  	<argument2> - data\n"
++	"  3 -	get_vwire.\n"
++	"  4 -	put_vwire.\n"
++	"  	<argument1> - vw index\n"
++	"  	<argument2> - vw data\n"
++	"  5 -	put_iowr_short.\n"
++	"  	<argument1> - address\n"
++	"  	<argument2> - data\n"
++	"  	<argument3> - data len (bytes)\n"
++	"  6 -	put_iord_short.\n"
++	"  	<argument1> - address\n"
++	"  	<argument2> - data len (bytes)\n"
++);
+-- 
+2.34.1
+
