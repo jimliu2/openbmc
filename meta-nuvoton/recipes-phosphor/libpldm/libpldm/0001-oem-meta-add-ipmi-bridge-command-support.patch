@@ -1,0 +1,169 @@
+From e53d5271b3d3cc085608e8d568b080ab0c2e8c42 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Fri, 13 Sep 2024 15:44:53 +0800
+Subject: [PATCH] oem: meta: add ipmi bridge command support
+
+---
+ include/libpldm/meson.build            |  1 +
+ include/libpldm/oem/meta/ipmi_bridge.h | 47 +++++++++++++++++
+ src/oem/meta/ipmi_bridge.c             | 71 ++++++++++++++++++++++++++
+ src/oem/meta/meson.build               |  3 +-
+ 4 files changed, 121 insertions(+), 1 deletion(-)
+ create mode 100644 include/libpldm/oem/meta/ipmi_bridge.h
+ create mode 100644 src/oem/meta/ipmi_bridge.c
+
+diff --git a/include/libpldm/meson.build b/include/libpldm/meson.build
+index 014c9699..ddd35e23 100644
+--- a/include/libpldm/meson.build
++++ b/include/libpldm/meson.build
+@@ -33,6 +33,7 @@ endif
+ if get_option('oem-meta').allowed()
+   libpldm_headers += files(
+     'oem/meta/file_io.h',
++    'oem/meta/ipmi_bridge.h',
+   )
+ endif
+ 
+diff --git a/include/libpldm/oem/meta/ipmi_bridge.h b/include/libpldm/oem/meta/ipmi_bridge.h
+new file mode 100644
+index 00000000..c05c3d3f
+--- /dev/null
++++ b/include/libpldm/oem/meta/ipmi_bridge.h
+@@ -0,0 +1,47 @@
++/* SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later */
++#ifndef LIBPLDM_OEM_META_IPMI_BRIDGE_H
++#define LIBPLDM_OEM_META_IPMI_BRIDGE_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <stddef.h>
++#include <stdint.h>
++
++struct pldm_msg;
++/** @brief PLDM Commands in OEM META type
++ */
++
++#define PLDM_OEM_META_CMD_IPMI_BRIDGE 0x01
++
++struct pldm_ipmi_cmd_req {
++	uint8_t iana[3];
++	uint8_t netfn_lun;
++	uint8_t cmd;
++	uint8_t data[1];
++}__attribute__((packed));
++
++struct pldm_ipmi_cmd_resp {
++	uint8_t completion_code;
++	uint8_t netfn_lun;
++	uint8_t cmd;
++	uint8_t ipmi_comp_code;
++	uint8_t data[1];
++}__attribute__((packed));
++
++
++int decode_oem_meta_ipmi_bridge_req(const struct pldm_msg *msg,
++				size_t payload_length, uint8_t *iana, uint8_t *netfn_lun, uint8_t *cmd, uint8_t *data);
++
++
++int encode_oem_meta_ipmi_bridge_req(
++	uint8_t instance_id, uint8_t completion_code,
++	uint8_t net, uint8_t lun, uint8_t cmd, uint8_t cc, size_t payload_length, uint8_t *data, struct pldm_msg *msg);
++
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /*LIBPLDM_OEM_META_IPMI_BRIDGE_H*/
+diff --git a/src/oem/meta/ipmi_bridge.c b/src/oem/meta/ipmi_bridge.c
+new file mode 100644
+index 00000000..65c8cd93
+--- /dev/null
++++ b/src/oem/meta/ipmi_bridge.c
+@@ -0,0 +1,71 @@
++/* SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later */
++#include <libpldm/oem/meta/ipmi_bridge.h>
++#include <endian.h>
++#include <string.h>
++#include <stdio.h>
++#include "msgbuf.h"
++
++#define PLDM_OEM_META_DECODE_IPMI_BRIDGE_MIN_SIZE 5
++
++LIBPLDM_ABI_STABLE
++int decode_oem_meta_ipmi_bridge_req(const struct pldm_msg *msg,
++				size_t payload_length, uint8_t *iana, uint8_t *netfn_lun, uint8_t *cmd, uint8_t *data)
++{
++	struct pldm_msgbuf _buf;
++	struct pldm_msgbuf *buf = &_buf;
++
++	struct pldm_ipmi_cmd_req req;
++
++	if (iana == NULL || netfn_lun == NULL || cmd == NULL ||
++	    data == NULL)
++		return PLDM_ERROR_INVALID_DATA;
++
++
++	int rc = pldm_msgbuf_init_cc(
++		buf, PLDM_OEM_META_DECODE_IPMI_BRIDGE_MIN_SIZE, msg->payload,
++		payload_length);
++	if (rc)
++		return rc;
++
++	pldm_msgbuf_extract_p(buf, &req.iana[0]);
++	pldm_msgbuf_extract_p(buf, &req.iana[1]);
++	pldm_msgbuf_extract_p(buf, &req.iana[2]);
++	pldm_msgbuf_extract_p(buf, netfn_lun);
++	pldm_msgbuf_extract_p(buf, cmd);
++	if (payload_length > 5) {
++		pldm_msgbuf_extract_array_uint8(buf, data, payload_length - 5);
++	}
++
++	return pldm_msgbuf_destroy_consumed(buf);
++}
++
++LIBPLDM_ABI_STABLE
++int encode_oem_meta_ipmi_bridge_req(
++	uint8_t instance_id, uint8_t completion_code,
++	uint8_t net, uint8_t lun, uint8_t cmd, uint8_t cc, size_t payload_length, uint8_t *data, struct pldm_msg *msg)
++{
++	if (msg == NULL)
++		return PLDM_ERROR_INVALID_DATA;
++
++	struct pldm_header_info header = { 0 };
++	header.msg_type = PLDM_RESPONSE;
++	header.instance = instance_id;
++	header.pldm_type = PLDM_OEM;
++	header.command = PLDM_OEM_META_CMD_IPMI_BRIDGE;
++
++	uint8_t rc = pack_pldm_header(&header, &(msg->hdr));
++	if (PLDM_SUCCESS != rc)
++		return rc;
++
++	struct pldm_ipmi_cmd_resp *response =
++		(struct pldm_ipmi_cmd_resp *)msg->payload;
++	response->completion_code = completion_code;
++	response->netfn_lun = net << 2 | lun;
++	response->cmd = cmd;
++	response->ipmi_comp_code = cc;
++
++	if (payload_length > 0)
++		memcpy(response->data, data, payload_length);
++
++	return PLDM_SUCCESS;
++}
+diff --git a/src/oem/meta/meson.build b/src/oem/meta/meson.build
+index 6c89286a..2ff4b357 100644
+--- a/src/oem/meta/meson.build
++++ b/src/oem/meta/meson.build
+@@ -1,3 +1,4 @@
+ libpldm_sources += files(
+-    'file_io.c'
++    'file_io.c',
++    'ipmi_bridge.c'
+   )
+-- 
+2.34.1
+

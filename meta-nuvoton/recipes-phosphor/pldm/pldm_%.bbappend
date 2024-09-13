@@ -10,3 +10,4 @@ SRC_URI:append = " file://0002-platform-mc-Support-pollForPlatFormEventMessage.p
 SRC_URI:append = " file://0003-requester-support-multi-host-MCTP-devices-hot-plug.patch"
 SRC_URI:append = " file://0004-pldm-Revise-image-path-for-update.patch"
 SRC_URI:append = " file://0005-Support-OEM-META-write-file-request-for-post-code-hi.patch"
+SRC_URI:append = " file://0008-oem-meta-support-ipmi-bridge-oem-command.patch"
