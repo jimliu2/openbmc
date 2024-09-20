@@ -1,0 +1,85 @@
+From dac349089d55a74c9feb719f7567b388fb9cf2c8 Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Fri, 20 Sep 2024 14:06:58 +0800
+Subject: [PATCH] dts: define 7seg gpio names
+
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
+---
+ .../boot/dts/nuvoton/nuvoton-npcm845-evb.dts  | 26 +++++++++++++++----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+index a61ee7778980..de03e6d07164 100644
+--- a/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
++++ b/arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dts
+@@ -63,7 +63,7 @@ aliases {
+ 		i2c24 = &i2c24;
+ 		i2c25 = &i2c25;
+ 		i2c26 = &i2c26;
+-		spi1 = &spi_gpio;
++		//spi1 = &spi_gpio;
+ 	};
+ 
+ 	chosen {
+@@ -80,7 +80,7 @@ iio-hwmon {
+ 			<&adc 4>, <&adc 5>, <&adc 6>, <&adc 7>;
+ 	};
+ 
+-	spi_gpio: spi-gpio {
++	/*spi_gpio: spi-gpio {
+ 		compatible = "spi-gpio";
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -98,7 +98,7 @@ eeprom@0 {
+ 			reg = <0>;
+ 			address-width = <16>;
+ 		};
+-	};
++	};*/
+ 
+ 	leds {
+ 		compatible = "gpio-leds";
+@@ -531,7 +531,7 @@ fan@7 {
+ 
+ &pspi {
+ 	cs-gpios = <&gpio0 20 GPIO_ACTIVE_LOW>;
+-	status = "okay";
++	//status = "okay";
+ 	Flash@0 {
+ 		compatible = "jedec,spi-nor";
+ 		reg = <0x0>;
+@@ -718,7 +718,7 @@ &pinctrl {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <
+ 			&jtag2_pins
+-			&lpc_pins
++			//&lpc_pins
+ 			&spix_pins
+ 			&pin4_slew
+ 			&pin5_slew
+@@ -730,6 +730,22 @@ &pin240_slew
+ 			&pin241_slew
+ 			&pin242_slew
+ 			&pin243_slew>;
++	gpio0: gpio@f0010000 {
++		gpio-line-names =
++		/*0-31*/
++		/* LEDA = gpio8 */
++		/* LEDB = gpio12 */
++		/* LEDC = gpio13 */
++		/* LEDD = gpio14 */
++		/* LEDE = gpio15 */
++		/* LEDF = gpio17 */
++		/* LEDG = gpio18 */
++		/* LED_S = gpio19 */
++		"","","","","","","","",
++		"LED_POST_CODE_7","","","","LED_POST_CODE_6","LED_POST_CODE_5","LED_POST_CODE_4","LED_POST_CODE_3",
++		"","LED_POST_CODE_2","LED_POST_CODE_1","LED_POST_CODE_0","","","","",
++		"","","","","","","","";
++	};
+ };
+ 
+ &vcd {
+-- 
+2.34.1
+

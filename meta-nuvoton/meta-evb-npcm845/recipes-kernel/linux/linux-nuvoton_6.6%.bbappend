@@ -26,7 +26,7 @@ SRC_URI:append:evb-npcm845 = " file://mctp.cfg"
 
 SRC_URI:append:evb-npcm845 = " file://0001-dts-arm64-npcm845-evb-enable-all-uarts.patch"
 SRC_URI:append:evb-npcm845 = " file://0001-dts-arm64-npcm845-evb-disable-fiu-drd-and-decrease-i.patch"
-
+SRC_URI:append:evb-npcm845 = " file://0001-dts-define-7seg-gpio-names.patch"
 # Support af_mctp over pcie vdm
 # SRC_URI:append:evb-npcm845 = " file://mctp_vdm.cfg"
 # SRC_URI:append:evb-npcm845 = " file://0001-kernel-dts-support-for-MCTP-verification.patch"

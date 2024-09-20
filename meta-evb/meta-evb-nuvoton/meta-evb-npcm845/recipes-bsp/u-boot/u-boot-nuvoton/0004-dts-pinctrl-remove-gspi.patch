@@ -1,0 +1,26 @@
+From db3387885755e27b19f8bf69901aa37b508cc47c Mon Sep 17 00:00:00 2001
+From: Stanley Chu <yschu@nuvoton.com>
+Date: Fri, 20 Sep 2024 15:31:01 +0800
+Subject: [PATCH] dts: pinctrl: remove gspi
+
+Signed-off-by: Stanley Chu <yschu@nuvoton.com>
+---
+ arch/arm/dts/nuvoton-npcm845-evb.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/nuvoton-npcm845-evb.dts b/arch/arm/dts/nuvoton-npcm845-evb.dts
+index 3007d04267..0a9df7fe8d 100644
+--- a/arch/arm/dts/nuvoton-npcm845-evb.dts
++++ b/arch/arm/dts/nuvoton-npcm845-evb.dts
+@@ -362,7 +362,7 @@
+ &pinctrl {
+         pinctrl-names = "default";
+         pinctrl-0 = <
+-		&gspi_pins
++		//&gspi_pins
+ 		&vgadig_pins
+ 		&spix_pins
+ 		&r1_pins
+-- 
+2.34.1
+

@@ -50,7 +50,6 @@ RDEPENDS:${PN}-system = " \
         loadsvf \
         phosphor-ecc \
         i3c-tools \
-        program-vbios \
         program-edid \
         phosphor-ecc \
         optee-client \
