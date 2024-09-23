@@ -1,0 +1,78 @@
+From aebb42cd81d39e278763b68e214385d2230fd3c4 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Mon, 23 Sep 2024 15:02:17 +0800
+Subject: [PATCH] mctpd: supprot usb binding
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ src/mctpd.c | 44 +++++++++++++++++++++++++-------------------
+ 1 file changed, 25 insertions(+), 19 deletions(-)
+
+diff --git a/src/mctpd.c b/src/mctpd.c
+index 7174125..935881a 100644
+--- a/src/mctpd.c
++++ b/src/mctpd.c
+@@ -1790,27 +1790,30 @@ static int setup_static_eid(ctx *ctx)
+ 
+ 		message = sd_bus_message_unref(message);
+ 
+-		// Read Address
+-		rc = sd_bus_get_property(ctx->bus,
+-			OPENBMC_ENTITY_MANAGER, object_paths[i],
+-			OPENBMC_MCTP_CONFIG_IFACE, "Address",
+-			&error, &message, "at");
+-		if (rc < 0) {
+-			warnx("Failed to get address from %s. Error:%s", object_paths[i],
+-				error.message);
+-			break;
+-		}
+ 
+-		const void* msg_hwaddr = NULL;
+-		size_t msg_hwaddr_len;
+-		sd_bus_message_read_array(message, 't', &msg_hwaddr, &msg_hwaddr_len);
+-		const uint64_t* hwaddr_array = (const uint64_t*)msg_hwaddr;
++		if (strcmp(bmc_interface, "USB") != 0) {
++			// Read Address
++			rc = sd_bus_get_property(ctx->bus,
++				OPENBMC_ENTITY_MANAGER, object_paths[i],
++				OPENBMC_MCTP_CONFIG_IFACE, "Address",
++				&error, &message, "at");
++			if (rc < 0) {
++				warnx("Failed to get address from %s. Error:%s", object_paths[i],
++					error.message);
++				break;
++			}
+ 
+-		memset(dest->hwaddr, 0x0, MAX_ADDR_LEN);
+-		for (int i = 0; i < msg_hwaddr_len; ++i) {
+-			dest->hwaddr[i] = (uint8_t)hwaddr_array[i] & 0xFF;
++			const void* msg_hwaddr = NULL;
++			size_t msg_hwaddr_len;
++			sd_bus_message_read_array(message, 't', &msg_hwaddr, &msg_hwaddr_len);
++			const uint64_t* hwaddr_array = (const uint64_t*)msg_hwaddr;
++
++			memset(dest->hwaddr, 0x0, MAX_ADDR_LEN);
++			for (int i = 0; i < msg_hwaddr_len; ++i) {
++				dest->hwaddr[i] = (uint8_t)hwaddr_array[i] & 0xFF;
++			}
++			dest->hwaddr_len = msg_hwaddr_len / sizeof(uint64_t);
+ 		}
+-		dest->hwaddr_len = msg_hwaddr_len / sizeof(uint64_t);
+ 
+ 		message = sd_bus_message_unref(message);
+ 
+@@ -1828,7 +1831,10 @@ static int setup_static_eid(ctx *ctx)
+ 		char ifname[MAX_STRING_SIZE];
+ 
+ 		sd_bus_message_read(message, "t", &bus);
+-		if (strcmp(bmc_interface, "I3C") == 0) {
++		if (strcmp(bmc_interface, "USB") == 0) {
++			sprintf(ifname, "mctpusb%ld", bus);
++		}
++		else if (strcmp(bmc_interface, "I3C") == 0) {
+ 			sprintf(ifname, "mctpi3c%ld", bus);
+ 		} else {
+ 			sprintf(ifname, "mctpi2c%ld", bus);
+-- 
+2.34.1
+

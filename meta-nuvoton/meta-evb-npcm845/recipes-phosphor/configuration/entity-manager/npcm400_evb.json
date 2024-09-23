@@ -1,9 +1,9 @@
 {
     "Exposes": [
         {
-            "Address": ["6", "50", "18", "52", "86", "7"],
+            "Address": "0",
             "Bus": "0",
-            "Class": "I3C",
+            "Class": "USB",
             "EndpointId": "10",
             "IANA": "0015A000",
             "Name": "BIC",
