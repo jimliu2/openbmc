@@ -1,1 +1,2 @@
-SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="1d6b", ATTRS{product}=="NPCM400*", ENV{DEVTYPE}=="usb_device", ENV{DRIVER}=="mctp", RUN+="/usr/bin/systemctl restart mctpd"
+SUBSYSTEM=="usb", ACTION=="add", ENV{PRODUCT}=="1d6b/104/206", RUN+="/usr/bin/systemctl start mctpd"
+SUBSYSTEM=="usb", ACTION=="remove", ENV{PRODUCT}=="1d6b/104/206", RUN+="/usr/bin/systemctl stop mctpd"
