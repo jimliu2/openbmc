@@ -1,0 +1,39 @@
+From a5419be2492e77de74b436472053f579d1a6a94c Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Thu, 26 Sep 2024 17:35:51 +0800
+Subject: [PATCH] do not set address is class is USB
+
+---
+ requester/configuration_discovery_handler.cpp | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/requester/configuration_discovery_handler.cpp b/requester/configuration_discovery_handler.cpp
+index 8b4d956bd..03625fc2b 100644
+--- a/requester/configuration_discovery_handler.cpp
++++ b/requester/configuration_discovery_handler.cpp
+@@ -117,13 +117,16 @@ MctpEndpoint ConfigurationDiscoveryHandler::parseMctpEndpointFromResponse(
+     if (response.contains("Address") && response.contains("Bus") &&
+         response.contains("EndpointId") && response.contains("Name"))
+     {
+-        auto addressArray =
+-            std::get<std::vector<uint64_t>>(response.at("Address"));
+         uint64_t address = 0;
+-
+-        for (const auto& element : addressArray)
+-        {
+-            address = (address << 8) | element;
++        auto classValue  = std::get<std::string>(response.at("Class"));
++
++        if (classValue != "USB") {
++            auto addressArray =
++                std::get<std::vector<uint64_t>>(response.at("Address"));
++            for (const auto& element : addressArray)
++            {
++                address = (address << 8) | element;
++            }
+         }
+ 
+         auto eid = std::get<uint64_t>(response.at("EndpointId"));
+-- 
+2.34.1
+
