@@ -27,7 +27,6 @@ RDEPENDS:${PN}-chassis = " \
 
 SUMMARY:${PN}-fans = "EVB NPCM845 Fans"
 RDEPENDS:${PN}-fans = " \
-        phosphor-pid-control \
         "
 
 SUMMARY:${PN}-flash = "EVB NPCM845 Flash"
@@ -37,7 +36,6 @@ RDEPENDS:${PN}-flash = " \
 
 SUMMARY:${PN}-system = "EVB NPCM845 System"
 RDEPENDS:${PN}-system = " \
-        obmc-ikvm \
         iperf3 \
         nmon \
         htop \
@@ -48,19 +46,13 @@ RDEPENDS:${PN}-system = " \
         phosphor-sel-logger \
         rsyslog \
         loadsvf \
-        phosphor-ecc \
         i3c-tools \
-        program-edid \
-        phosphor-ecc \
         optee-client \
-        cerberus-utility \
-        estoraged \
-        cryptsetup \
         systemd-analyze \
         pldm \
         mctp \
-        usb-tty \
         persistent-net-name \
         phosphor-hostlogger \
         phosphor-post-code-manager \    
+        phosphor-ipmi-host \
         "

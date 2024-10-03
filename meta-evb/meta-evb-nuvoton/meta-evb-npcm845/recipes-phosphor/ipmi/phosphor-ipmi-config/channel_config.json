@@ -1,12 +1,12 @@
 {
   "0" : {
-    "name" : "Ipmb",
+    "name" : "mctpusb0",
     "is_valid" : true,
     "active_sessions" : 0,
     "channel_info" : {
-      "medium_type" : "ipmb",
-      "protocol_type" : "ipmb-1.0",
-      "session_supported" : "session-less",
+      "medium_type" : "usb-2x",
+      "protocol_type" : "reserved",
+      "session_supported" : "multi-session",
       "is_ipmi" : true
     }
   },
@@ -22,35 +22,35 @@
     }
   },
   "2" : {
-    "name" : "eth1",
-    "is_valid" : true,
+    "name" : "RESERVED",
+    "is_valid" : false,
     "active_sessions" : 0,
     "channel_info" : {
-      "medium_type" : "lan-802.3",
-      "protocol_type" : "ipmb-1.0",
-      "session_supported" : "multi-session",
+      "medium_type" : "reserved",
+      "protocol_type" : "na",
+      "session_supported" : "session-less",
       "is_ipmi" : true
     }
   },
   "3" : {
-    "name" : "eth3",
-    "is_valid" : true,
+    "name" : "RESERVED",
+    "is_valid" : false,
     "active_sessions" : 0,
     "channel_info" : {
-      "medium_type" : "lan-802.3",
-      "protocol_type" : "ipmb-1.0",
-      "session_supported" : "multi-session",
+      "medium_type" : "reserved",
+      "protocol_type" : "na",
+      "session_supported" : "session-less",
       "is_ipmi" : true
     }
   },
   "4" : {
-    "name" : "usb0",
-    "is_valid" : true,
+    "name" : "RESERVED",
+    "is_valid" : false,
     "active_sessions" : 0,
     "channel_info" : {
-      "medium_type" : "lan-802.3",
-      "protocol_type" : "ipmb-1.0",
-      "session_supported" : "multi-session",
+      "medium_type" : "reserved",
+      "protocol_type" : "na",
+      "session_supported" : "session-less",
       "is_ipmi" : true
     }
   },
@@ -154,23 +154,23 @@
     }
   },
   "14" : {
-    "name" : "SELF",
+    "name" : "RESERVED",
     "is_valid" : false,
     "active_sessions" : 0,
     "channel_info" : {
-      "medium_type" : "ipmb",
-      "protocol_type" : "ipmb-1.0",
+      "medium_type" : "reserved",
+      "protocol_type" : "na",
       "session_supported" : "session-less",
       "is_ipmi" : true
     }
   },
   "15" : {
-    "name" : "ipmi_kcs1",
-    "is_valid" : true,
+    "name" : "RESERVED",
+    "is_valid" : false,
     "active_sessions" : 0,
     "channel_info" : {
-      "medium_type" : "system-interface",
-      "protocol_type" : "kcs",
+      "medium_type" : "reserved",
+      "protocol_type" : "na",
       "session_supported" : "session-less",
       "is_ipmi" : true
     }

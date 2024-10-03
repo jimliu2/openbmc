@@ -21,4 +21,6 @@ SRC_URI:append:evb-npcm845 = " file://0002-Support-bridging-commands.patch"
 PACKAGECONFIG:append:evb-npcm845 = " ${@entity_enabled(d, 'dynamic-sensors', '')}"
 
 # avoid build error after remove ipmi-fru
-WHITELIST_CONF:evb-npcm845 = "${S}/host-ipmid-whitelist.conf"
+#WHITELIST_CONF:evb-npcm845 = "${S}/host-ipmid-whitelist.conf"
+EXTRA_OEMESON:append:evb-npcm845 = " -Dget-dbus-active-software=disabled"
+EXTRA_OEMESON:append:evb-npcm845 = " -Dipmi-whitelist=disabled"
