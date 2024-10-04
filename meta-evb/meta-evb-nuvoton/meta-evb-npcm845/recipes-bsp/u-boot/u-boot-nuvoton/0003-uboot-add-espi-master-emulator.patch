@@ -1,38 +1,28 @@
-From dc6bb81d69c02df7dc676fccbe421f8fa531e310 Mon Sep 17 00:00:00 2001
+From 1600d856ebf0b9d4253933f5c4729ae737c56dda Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
 Date: Mon, 9 Sep 2024 11:12:35 +0800
 Subject: [PATCH] uboot: add espi master emulator
 
 Signed-off-by: Stanley Chu <yschu@nuvoton.com>
 ---
- arch/arm/dts/nuvoton-npcm845-evb.dts     |  14 +
- arch/arm/dts/nuvoton-npcm845-pincfg.dtsi |  45 ++
- cmd/Kconfig                              |   5 +
- cmd/Makefile                             |   1 +
- cmd/espi.c                               | 924 +++++++++++++++++++++++
- 5 files changed, 989 insertions(+)
+ arch/arm/dts/nuvoton-npcm845-evb.dts     |    4 +
+ arch/arm/dts/nuvoton-npcm845-pincfg.dtsi |   45 +
+ cmd/Kconfig                              |    5 +
+ cmd/Makefile                             |    1 +
+ cmd/espi.c                               | 1126 ++++++++++++++++++++++
+ 5 files changed, 1181 insertions(+)
  create mode 100644 cmd/espi.c
 
 diff --git a/arch/arm/dts/nuvoton-npcm845-evb.dts b/arch/arm/dts/nuvoton-npcm845-evb.dts
-index 3007d04267..d824516c69 100644
+index 3007d04267..5640554df3 100644
 --- a/arch/arm/dts/nuvoton-npcm845-evb.dts
 +++ b/arch/arm/dts/nuvoton-npcm845-evb.dts
-@@ -359,6 +359,20 @@
+@@ -359,6 +359,10 @@
  	status = "okay";
  };
  
 +&host_intf {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <
-+		&gpio240o_pins	//nCS
-+		&gpio241o_pins	//clk
-+		&gpio242o_pins	//IO0
-+		&gpio243o_pins	//IO1
-+		&gpio244o_pins	//IO2
-+		&gpio245o_pins	//IO3
-+		&gpio246o_pins	//nRST
-+		&gpio247o_pins	//nAlert
-+		>;
++	type = "espim";
 +};
 +
  &pinctrl {
@@ -123,10 +113,10 @@ index afb8c5f61c..6a6b0cf9b8 100644
  obj-$(CONFIG_CMD_EXT2) += ext2.o
 diff --git a/cmd/espi.c b/cmd/espi.c
 new file mode 100644
-index 0000000000..f52fceb92c
+index 0000000000..2200979601
 --- /dev/null
 +++ b/cmd/espi.c
-@@ -0,0 +1,924 @@
+@@ -0,0 +1,1126 @@
 +#include <stdlib.h>
 +#include <command.h>
 +#include <common.h>
@@ -147,20 +137,16 @@ index 0000000000..f52fceb92c
 + * GPIO Assign Note:
 + * eSPI_CLK and eSPI_IO signals must assign on the same GPIO port.
 + */
-+#define PORT_BASE	0xF0017000	// GPIO7
++#define PORT_BASE	0xF0015000	// GPIO5: 160~191
 +#define PORT_OUT	(PORT_BASE + 0xC)
 +#define PORT_IN		(PORT_BASE + 0x4)
 +#define PORT_OES	(PORT_BASE + 0x70)
 +#define PORT_IEM	(PORT_BASE + 0x58)
-+
-+#define eSPI_nCS	BIT(16) //240
-+#define eSPI_CLK	BIT(17) //241
-+#define eSPI_IO0	BIT(18) //242
-+#define eSPI_IO1	BIT(19) //243
-+#define eSPI_IO2	BIT(20) //244
-+#define eSPI_IO3	BIT(21) //245
-+#define eSPI_nRST	BIT(22) //246
-+#define eSPI_nALERT	BIT(23) //247
++#define eSPI_nCS	BIT(1) //161
++#define eSPI_CLK	BIT(3) //163
++#define eSPI_IO0	BIT(4) //164
++#define eSPI_IO1	BIT(5) //165
++#define eSPI_nRST	BIT(6) //166
 +
 +// eSPI command
 +#define CMD_SET_CONFIGURATION	0x22
@@ -276,8 +262,36 @@ index 0000000000..f52fceb92c
 +	u8 crc;
 +} __attribute__((__packed__));
 +
++struct get_devid_resp {
++	u8 netfn_lun;
++	u8 cmd;
++	u8 comp_code;
++	u8 dev_id;
++	u8 dev_rev;
++	u8 fw_rev1;
++	u8 fw_rev2;
++	u8 ipmi_ver;
++	u8 dev_support;
++	u8 manf_id[3];
++	u8 prod_id[2];
++	u8 aux_fw_rev[4];
++} __attribute__((__packed__));
++
++struct get_selinfo_resp {
++	u8 netfn_lun;
++	u8 cmd;
++	u8 comp_code;
++	u8 sel_ver;
++	u8 entries_lsb;
++	u8 entries_msb;
++	u16 free_space;
++	u32 add_timestamp;
++	u32 erase_timestamp;
++	u8 operation_supp;
++} __attribute__((__packed__));
++
 +static u32 espi_port_state = 0;
-+static bool debug = true;
++static bool debug = false;
 +
 +void inline espi_port_update(u32 set, u32 clear)
 +{
@@ -298,6 +312,14 @@ index 0000000000..f52fceb92c
 +
 +static void espi_init(void)
 +{
++	u32 reg;
++
++	// clear MFSEL1.26 & MFSEL4.8
++	reg = readl(0xF0800260) & ~BIT(26);
++	writel(reg, 0xF0800260);
++	reg = readl(0xF080026C) & ~BIT(8);
++	writel(reg, 0xF080026C);
++
 +	printf("espi: init gpios\n");
 +	// initial state: nCS high, nRST high, CLK low
 +	espi_port_state = readl(PORT_OUT);
@@ -307,11 +329,12 @@ index 0000000000..f52fceb92c
 +	// set input enable
 +	writel(eSPI_IO1, PORT_IEM);
 +
-+	printf("espi: assert nRST\n");
-+	// eSPI reset
++	printf("espi reset\n");
 +	udelay(100);
++	// assert eSPI_nRST
 +	espi_port_update(0, eSPI_nRST);
 +	udelay(100);
++	// deassert eSPI_nRST
 +	espi_port_update(eSPI_nRST, 0);
 +	udelay(100);
 +}
@@ -948,7 +971,7 @@ index 0000000000..f52fceb92c
 +
 +static int do_espi_command(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 +{
-+	u32 command, addr, index, data, count;
++	u32 addr, index, data, count;
 +	u8 resp[MAX_RESP_LEN];
 +	int rc = 0;
 +
@@ -969,38 +992,29 @@ index 0000000000..f52fceb92c
 +		return 0;
 +	}
 +
-+	command=simple_strtoul(argv[1], NULL, 16);
-+	if(command > 6)
-+		return CMD_RET_USAGE;
-+
 +	if (espi_port_state == 0)
 +		espi_init();
 +
-+	switch (command) {
-+	case 1:
++	if (!strcmp(argv[1], "getconfig")) {
 +		if (argc < 3)
 +			return CMD_RET_USAGE;
 +		addr=simple_strtoul(argv[2], NULL, 16);
 +		espi_get_configuration(addr, resp);
-+		break;
-+	case 2:
++	} else if (!strcmp(argv[1], "setconfig")) {
 +		if (argc < 4)
 +			return CMD_RET_USAGE;
 +		addr=simple_strtoul(argv[2], NULL, 16);
 +		data=simple_strtoul(argv[3], NULL, 16);
 +		espi_set_configuration(addr, data, resp);
-+		break;
-+	case 3:
++	} else if (!strcmp(argv[1], "getvw")) {
 +		espi_get_vwire(resp);
-+		break;
-+	case 4:
++	} else if (!strcmp(argv[1], "putvw")) {
 +		if (argc < 4)
 +			return CMD_RET_USAGE;
 +		index=simple_strtoul(argv[2], NULL, 16);
 +		data=simple_strtoul(argv[3], NULL, 16);
 +		espi_put_vwire(index, data, resp);
-+		break;
-+	case 5:
++	} else if (!strcmp(argv[1], "iowr")) {
 +		if (argc < 5)
 +			return CMD_RET_USAGE;
 +		addr=simple_strtoul(argv[2], NULL, 16);
@@ -1009,47 +1023,225 @@ index 0000000000..f52fceb92c
 +		if (count < 1 || count > 4)
 +			return CMD_RET_USAGE;
 +		espi_put_iowr(addr, (u8 *)&data, count, resp);
-+		break;
-+	case 6:
++	} else if (!strcmp(argv[1], "iord")) {
 +		if (argc < 4)
 +			return CMD_RET_USAGE;
 +		addr=simple_strtoul(argv[2], NULL, 16);
 +		count=simple_strtoul(argv[3], NULL, 16);
 +		if (count < 1 || count > 4)
 +			return CMD_RET_USAGE;
++		debug = true;
 +		espi_put_iord(addr, count, resp);
-+		break;
-+	default:
++		debug = false;
++	} else {
 +		rc = CMD_RET_USAGE;
-+		break;
 +	}
-+	return (rc);
++
++	return rc;
++}
++
++static int do_ipmi_bmc_cmd(char *arg)
++{
++	u8 req[2];
++	int read_len;
++	struct get_devid_resp devid;
++	//struct get_selinfo_resp selinfo;
++	u8 *resp;
++	int resp_len;
++	u8 netfn_lun;
++	u8 cmd;
++
++	if (!strcmp(arg, "info")) {
++		netfn_lun = 0x18;
++		cmd = 1; // get_device_id
++		resp = (u8 *)&devid;
++		resp_len = sizeof(devid);
++#if 0
++	} else if (!strcmp(arg, "sel")) {
++		netfn_lun = 0x28;
++		cmd = 0x40; // get_sel_info
++		resp = (u8 *)&selinfo;
++		resp_len = sizeof(selinfo);
++	} else if (!strcmp(arg, "sdr")) {
++		netfn_lun = 0x28;
++		cmd = 0x20; // get_sdr_info
++		resp = (u8 *)&selinfo;
++		resp_len = sizeof(selinfo);
++#endif
++	} else {
++		return -EINVAL;
++	}
++	req[0] = netfn_lun;
++	req[1] = cmd;
++	read_len = kcs_transfer(req, 2, resp, resp_len);
++
++	if (read_len < 0) {
++		printf("kcs transfer err\n");
++		return 0;
++	}
++	if (!strcmp(arg, "info")) {
++		printf("Device ID\t\t: %d\n", devid.dev_id);
++		printf("Device Revision\t\t: %d\n", devid.dev_rev);
++		printf("Firmware Revision\t: %x.%x\n", devid.fw_rev1, devid.fw_rev2);
++		printf("IPMI Version\t\t: %d.%d\n", devid.ipmi_ver&0x0F, devid.ipmi_ver >> 4);
++		printf("Manufacturer ID\t\t: 0x%06x\n", devid.manf_id[2]<<16 | devid.manf_id[1]<<8 | devid.manf_id[0]);
++		printf("Porduct ID\t\t: 0x%04x\n", devid.prod_id[1] << 8 | devid.prod_id[0]);
++	}
++#if 0
++	else if (!strcmp(arg, "sel")) {
++		printf("Version\t\t\t: %d.%d\n", selinfo.sel_ver&0x0F, selinfo.sel_ver >> 4);
++		printf("Entries\t\t\t: %d\n", selinfo.entries_msb << 8 | selinfo.entries_lsb);
++		printf("Free Space\t\t: %d\n", selinfo.free_space);
++		if (selinfo.add_timestamp == -1)
++			printf("Last Add Time\t\t: Not Available\n");
++		else
++			printf("Last Add Time\t\t: %d\n", selinfo.add_timestamp);
++		if (selinfo.add_timestamp == -1)
++			printf("Last Del Time\t\t: Not Available\n");
++		else
++			printf("Last Del Time\t\t: %d\n", selinfo.erase_timestamp);
++	}
++#endif
++	//for (i = 0; i < read_len; i++)
++	//	printf("%02x ", resp[i]);
++	//printf("\n");
++
++	return 0;
++}
++
++static int do_ipmi_sdr(int record)
++{
++	u8 req[8];
++	u8 resp[128];
++	int resp_len = 5 + 64; // Fn_Lun + Cmd + Comp_code + Recid_lsb + Recid_msb + record[64]
++	int read_len;
++	//u8 m, b, r_exp, b_exp;
++	//u8 sensor_num;
++	u8 sensor_name[17];
++
++	req[0] = 0x28; // storage
++	req[1] = 0x23; // getSDR
++	req[2] = 0; // reserveation id
++	req[3] = 0;
++	req[4] = record & 0xFF;
++	req[5] = (record >> 8) & 0xFF;
++	req[6] = 0;
++	req[7] = 0xFF;
++	read_len = kcs_transfer(req, 8, resp, resp_len);
++
++	if (read_len < 5) {
++		printf("ipmi sdr err\n");
++		return 0;
++	}
++	if (resp[2] != 0) {
++		printf("getSDR completion code=0x%x\n", resp[2]);
++		return 0;
++	}
++	// record type
++	if (resp[8] != 1) {
++		// not full sensor record type
++		return 0;
++	}
++	// sensor type
++	if (resp[17] != 1) {
++		// not temperature
++		return 0;
++	}
++	#if 0
++	sensor_num = resp[12];
++	m = resp[29];
++	b = resp[31];
++	r_exp = (resp[34] >> 4) & 0x0F;
++	b_exp = (resp[34]) & 0x0F;
++
++	printf("resp len=%d\n", read_len);
++	printf("sensor number=0x%x\n", resp[12]);
++	printf("sensor type=0x%x\n", resp[17]);
++	printf("sensor base unit=0x%x\n", resp[26]);
++	printf("sensor modifier unit=0x%x\n", resp[27]);
++	printf("ID string type=0x%02x\n", resp[52]);
++	printf("raw reading=%d\n", resp[36]);
++	printf("M=%d, B=%d\n", resp[29], resp[31]);
++	printf("R exp=%d, B exp=%d\n", (resp[34]>>4)&0x0F, resp[34]&0x0F);
++	#endif
++	memset(sensor_name, 0, sizeof(sensor_name));
++	memcpy(sensor_name, &resp[53], resp[52] & 0x1F);
++
++
++	// Get Sensor Reading
++	req[0] = 0x10; // sensor/event
++	req[1] = 0x2D; // get sensor reading
++	req[2] = resp[12];
++	read_len = kcs_transfer(req, 3, resp, resp_len);
++
++	if (read_len < 0) {
++		printf("kcs transfer err\n");
++		return 0;
++	}
++	if (resp[2] != 0) {
++		printf("Get Sensor Reading completion code=0x%x\n", resp[2]);
++		return 0;
++	}
++	printf("%s: %d degree C\n", sensor_name, resp[3]);
++
++	return 0;
++}
++
++static int do_ipmi_command(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
++{
++	int record;
++
++	if (argc < 2)
++		return CMD_RET_USAGE;
++
++	if (strcmp(argv[1], "bmc") == 0) {
++		return do_ipmi_bmc_cmd(argv[2]);
++	}
++	if (strcmp(argv[1], "sdr") == 0) {
++		if (argc > 2)
++			record = simple_strtoul(argv[2], NULL, 16);
++		else
++			record = 8; //EVB_Temp
++		return do_ipmi_sdr(record);
++	}
++
++	return 0;
 +}
 +
 +U_BOOT_CMD(
 +	espi ,	5,	1,	do_espi_command,
 +	"espi master command",
 +	"<command> [<argument1>] [<argument2>] [<argument3>]\n"
-+	"espi init	- init espi gpios and assert nRST\n"
-+	"espi start	- start espi master auto config\n"
-+	"espi kcstest	- do the kcs transfer\n"
 +	"<command> \n"
-+	"  1 -	get_configuration\n"
++	" init - init espi gpios and assert nRST\n"
++	" start - start espi master auto config\n"
++	" kcstest - do the kcs transfer\n"
++	" getconfig - get_configuration\n"
 +	"  	<argument1> - address\n"
-+	"  2 -	set_configuration.\n"
++	" setconfig - set_configuration.\n"
 +	"  	<argument1> - address\n"
 +	"  	<argument2> - data\n"
-+	"  3 -	get_vwire.\n"
-+	"  4 -	put_vwire.\n"
++	" getvw - get_vwire.\n"
++	" putvw - put_vwire.\n"
 +	"  	<argument1> - vw index\n"
 +	"  	<argument2> - vw data\n"
-+	"  5 -	put_iowr_short.\n"
++	" iowr - put_iowr_short.\n"
 +	"  	<argument1> - address\n"
 +	"  	<argument2> - data\n"
 +	"  	<argument3> - data len (bytes)\n"
-+	"  6 -	put_iord_short.\n"
++	" iord - put_iord_short.\n"
 +	"  	<argument1> - address\n"
 +	"  	<argument2> - data len (bytes)\n"
++);
++
++U_BOOT_CMD(
++	ipmitool ,	3,	1,	do_ipmi_command,
++	"ipmi command",
++	"<command> <argument>\n"
++	"<command> \n"
++	" bmc - bmc command\n"
++	"     info - show bmc info\n"
++	" sdr - show sensor reading\n"
 +);
 -- 
 2.34.1
