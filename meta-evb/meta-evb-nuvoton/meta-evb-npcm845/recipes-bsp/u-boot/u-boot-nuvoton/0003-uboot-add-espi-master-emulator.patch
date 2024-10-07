@@ -1,4 +1,4 @@
-From 1600d856ebf0b9d4253933f5c4729ae737c56dda Mon Sep 17 00:00:00 2001
+From ad667f49f2f5caf8801e1ff99049cfe59cf9b962 Mon Sep 17 00:00:00 2001
 From: Stanley Chu <yschu@nuvoton.com>
 Date: Mon, 9 Sep 2024 11:12:35 +0800
 Subject: [PATCH] uboot: add espi master emulator
@@ -9,8 +9,8 @@ Signed-off-by: Stanley Chu <yschu@nuvoton.com>
  arch/arm/dts/nuvoton-npcm845-pincfg.dtsi |   45 +
  cmd/Kconfig                              |    5 +
  cmd/Makefile                             |    1 +
- cmd/espi.c                               | 1126 ++++++++++++++++++++++
- 5 files changed, 1181 insertions(+)
+ cmd/espi.c                               | 1151 ++++++++++++++++++++++
+ 5 files changed, 1206 insertions(+)
  create mode 100644 cmd/espi.c
 
 diff --git a/arch/arm/dts/nuvoton-npcm845-evb.dts b/arch/arm/dts/nuvoton-npcm845-evb.dts
@@ -113,10 +113,10 @@ index afb8c5f61c..6a6b0cf9b8 100644
  obj-$(CONFIG_CMD_EXT2) += ext2.o
 diff --git a/cmd/espi.c b/cmd/espi.c
 new file mode 100644
-index 0000000000..2200979601
+index 0000000000..68ca6104f4
 --- /dev/null
 +++ b/cmd/espi.c
-@@ -0,0 +1,1126 @@
+@@ -0,0 +1,1151 @@
 +#include <stdlib.h>
 +#include <command.h>
 +#include <common.h>
@@ -891,6 +891,7 @@ index 0000000000..2200979601
 +	u8 resp[MAX_RESP_LEN];
 +	//struct espi_common_resp *common_resp = (struct espi_common_resp *)&resp[0];
 +	struct get_configuration_resp *config_resp = (struct get_configuration_resp *)&resp[0];
++	int count = 10;
 +	//struct put_iord_resp *iord_resp = (struct put_iord_resp *)&resp[0];
 +	//struct get_vwire_resp *vwire_resp = (struct get_vwire_resp *)&resp[0];
 +	//u32 data;
@@ -901,7 +902,31 @@ index 0000000000..2200979601
 +	if (config_resp->status & STATUS_VW_AVAIL)
 +		espi_get_vwire(resp);
 +
++	/* wait VW channle ready */
++	while (count-- > 0) {
++		espi_get_configuration(0x20, resp);
++		if (config_resp->data & BIT(1)) {
++			printf("VW channel ready\n");
++			break;
++		}
++		mdelay(1);
++	}
++	/* deassert PLTRST# & SUS_STAT# */
 +	espi_put_vwire(3, 0x33, resp);
++	if (config_resp->status & STATUS_VW_AVAIL)
++		espi_get_vwire(resp);
++
++	espi_set_configuration(0x10, 0x00001113, resp);
++	/* wait peripheral channle ready */
++	count = 10;
++	while (count-- > 0) {
++		espi_get_configuration(0x10, resp);
++		if (config_resp->data & BIT(1)) {
++			printf("Peripheral channel ready\n");
++			break;
++		}
++		mdelay(1);
++	}
 +
 +	printf("configure SP1\n");
 +	espi_iowr8(SIO_IDX, 7);
