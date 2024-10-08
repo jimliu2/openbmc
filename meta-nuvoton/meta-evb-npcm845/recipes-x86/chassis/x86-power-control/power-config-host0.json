@@ -14,9 +14,11 @@
       },
       {
           "Name" : "PostComplete",
-          "LineName" : "POST_COMPLETE",
-          "Type" : "GPIO",
-          "Polarity" : "ActiveLow"
+          "DbusName" : "xyz.openbmc_project.Host.Misc.Manager",
+          "Path" : "/xyz/openbmc_project/misc/platform_state",
+          "Interface" : "xyz.openbmc_project.State.Host.Misc",
+          "Property": "PostComplete",
+          "Type": "DBUS"
       },
       {
           "Name" : "PowerButton",

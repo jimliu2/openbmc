@@ -55,4 +55,5 @@ RDEPENDS:${PN}-system = " \
         phosphor-hostlogger \
         phosphor-post-code-manager \    
         phosphor-ipmi-host \
+        host-misc-comm-manager \
         "

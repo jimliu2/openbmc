@@ -1,0 +1,26 @@
+From 1f1d3d0c65ba131a87a16df15b8818d1be6818dc Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Tue, 8 Oct 2024 18:18:54 +0800
+Subject: [PATCH 2/2] set PostComplete property permission to readWrite
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ src/platform-state-mgr.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/platform-state-mgr.cpp b/src/platform-state-mgr.cpp
+index 2103327..065810d 100644
+--- a/src/platform-state-mgr.cpp
++++ b/src/platform-state-mgr.cpp
+@@ -148,7 +148,7 @@ void PlatformState::checkAndRegisterPltState(void)
+     {
+         pltStateIface->register_property("ESpiPlatformReset", eSpiReset);
+         pltStateIface->register_property("CoreBiosDone", coreBiosDone);
+-        pltStateIface->register_property("PostComplete", postComplete);
++        pltStateIface->register_property("PostComplete", postComplete, sdbusplus::asio::PropertyPermission::readWrite);
+         pltStateIface->initialize(true);
+     }
+ }
+-- 
+2.34.1
+
