@@ -1,0 +1,173 @@
+From bac5361655ae692fe7223ccc46f5faf6151d69cf Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Tue, 8 Oct 2024 18:32:19 +0800
+Subject: [PATCH] oem-meta: support vwgpio post completed event bridge
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ libpldmresponder/meson.build                  |  1 +
+ .../libpldmresponder/oem_meta_file_io.cpp     |  4 ++
+ .../oem_meta_file_io_by_type.hpp              |  1 +
+ .../oem_meta_file_io_type_post_completed.cpp  | 44 ++++++++++++++++
+ .../oem_meta_file_io_type_post_completed.hpp  | 52 +++++++++++++++++++
+ 5 files changed, 102 insertions(+)
+ create mode 100644 oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp
+ create mode 100644 oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp
+
+diff --git a/libpldmresponder/meson.build b/libpldmresponder/meson.build
+index 040cd8882..f4bdd03ee 100644
+--- a/libpldmresponder/meson.build
++++ b/libpldmresponder/meson.build
+@@ -67,6 +67,7 @@ if get_option('oem-meta').allowed()
+     sources += [
+         '../oem/meta/libpldmresponder/oem_meta_file_io.cpp',
+         '../oem/meta/libpldmresponder/oem_meta_file_io_type_post_code.cpp',
++        '../oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp',
+     ]
+ endif
+ 
+diff --git a/oem/meta/libpldmresponder/oem_meta_file_io.cpp b/oem/meta/libpldmresponder/oem_meta_file_io.cpp
+index aedffbc9e..0f3a4d527 100644
+--- a/oem/meta/libpldmresponder/oem_meta_file_io.cpp
++++ b/oem/meta/libpldmresponder/oem_meta_file_io.cpp
+@@ -1,6 +1,7 @@
+ #include "oem_meta_file_io.hpp"
+ 
+ #include "oem_meta_file_io_type_post_code.hpp"
++#include "oem_meta_file_io_type_post_completed.hpp"
+ #include "xyz/openbmc_project/Common/error.hpp"
+ 
+ #include <libpldm/oem/meta/ipmi_bridge.h>
+@@ -23,6 +24,9 @@ std::unique_ptr<FileHandler>
+         case POST_CODE:
+             return std::make_unique<PostCodeHandler>(
+                 messageTid, configurationDescovery->getConfigurations());
++        case VW_POST_COMPLETED:
++            return std::make_unique<VWPostCompletedHandler>(
++                messageTid, configurationDescovery->getConfigurations());
+         default:
+             error("Get invalid file io type, FILEIOTYPE={FILEIOTYPE}",
+                   "FILEIOTYPE", fileIOType);
+diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp b/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp
+index 6e8bd44c6..c2a1a0af4 100644
+--- a/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp
++++ b/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp
+@@ -18,6 +18,7 @@ constexpr auto ipmiDataMaxLength = 1024;
+ enum pldm_oem_meta_file_io_type : uint8_t
+ {
+     POST_CODE = 0x00,
++    VW_POST_COMPLETED = 0x06,
+ };
+ 
+ class FileHandler
+diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp
+new file mode 100644
+index 000000000..e051ccb6e
+--- /dev/null
++++ b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp
+@@ -0,0 +1,44 @@
++#include "oem_meta_file_io_type_post_completed.hpp"
++
++#include <phosphor-logging/lg2.hpp>
++
++#include <utility>
++
++PHOSPHOR_LOG2_USING;
++namespace pldm::responder::oem_meta
++{
++
++using postcompleted_t = bool;
++
++int VWPostCompletedHandler::write(const message& data)
++{
++    //uint8_t is_completed = data[0];
++    pldm::utils::DBusMapping dbusMapping;
++    bool postComplete = data[0];
++
++    static constexpr auto dbusService = "xyz.openbmc_project.Host.Misc.Manager";
++    static constexpr auto dbusObj = "/xyz/openbmc_project/misc/platform_state";
++
++    try
++    {
++        auto& bus = pldm::utils::DBusHandler::getBus();
++        auto method =
++            bus.new_method_call(dbusService, dbusObj,
++                                "org.freedesktop.DBus.Properties", "Set");
++
++        method.append(
++            "xyz.openbmc_project.State.Host.Misc", "PostComplete",
++          std::variant<postcompleted_t>(postcompleted_t(postComplete)));
++
++        bus.call(method);
++    }
++    catch (const std::exception& e)
++    {
++        error("Set Post completed error. ERROR={ERROR}", "ERROR", e);
++        return PLDM_ERROR;
++    }
++
++    return PLDM_SUCCESS;
++}
++
++} // namespace pldm::responder::oem_meta
+diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp
+new file mode 100644
+index 000000000..d7c499ac5
+--- /dev/null
++++ b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp
+@@ -0,0 +1,52 @@
++#pragma once
++
++#include "common/utils.hpp"
++#include "oem_meta_file_io_by_type.hpp"
++#include "requester/configuration_discovery_handler.hpp"
++
++namespace pldm::responder::oem_meta
++{
++/** @class VWPostCompletedHandler
++ *
++ *  @brief Inherits and implements FileHandler. This class is used
++ *  to store incoming postcode
++ */
++class VWPostCompletedHandler : public FileHandler
++{
++  public:
++    VWPostCompletedHandler(pldm_tid_t tid,
++                    const std::map<std::string, MctpEndpoint>& configurations) :
++        tid(tid), configurations(configurations)
++    {}
++
++    ~VWPostCompletedHandler() = default;
++
++    /** @brief Method to store postcode list
++     *  @param[in] data - post code
++     *  @return  PLDM status code
++     */
++    int write(const message& data);
++
++    /** @brief Method to read postcode list
++     *  @param[in] data - post code
++     *  @return  PLDM status code
++     */
++    int read(const message&)
++    {
++        return PLDM_ERROR_UNSUPPORTED_PLDM_CMD;
++    }
++
++  private:
++    /** @brief Parse object path to get correspond slot number
++     *  @param[in] slot - slot number
++     */
++    void parseObjectPathToGetSlot(uint64_t& slot);
++
++    /** @brief The terminus ID of the message source*/
++    pldm_tid_t tid = 0;
++
++    /** @brief Get existing configurations with MctpEndpoint*/
++    const std::map<configDbusPath, MctpEndpoint>& configurations;
++};
++
++} // namespace pldm::responder::oem_meta
+-- 
+2.34.1
+
