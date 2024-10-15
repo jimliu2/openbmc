@@ -1,0 +1,90 @@
+From 3d458fe386aabee7c662823747eb25e570b664a6 Mon Sep 17 00:00:00 2001
+From: Joseph Liu <kwliu@nuvoton.com>
+Date: Fri, 11 Oct 2024 16:19:44 +0800
+Subject: [PATCH] cmd: espi: add uart cmd test
+
+Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
+---
+ cmd/espi.c | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 54 insertions(+), 1 deletion(-)
+
+diff --git a/cmd/espi.c b/cmd/espi.c
+index 68ca6104f4..385a55d012 100644
+--- a/cmd/espi.c
++++ b/cmd/espi.c
+@@ -328,7 +328,7 @@ static u16 respi_read_response(u8 *resp, int len)
+ /*
+ After the last bit of the Command Phase has been sent out on the data lines, the data
+ lines enter the Turn-Around window. The eSPI master is required to drive all the data
+-lines to logic ¿1¿ for the first clock of the Turn-Around window and tri-state the data
++lines to logic ï¿½1ï¿½for the first clock of the Turn-Around window and tri-state the data
+ lines thereafter. The number of clocks for the Turn-Around window is a fixed 2 serial
+  */
+ static void espi_tar(void)
+@@ -1114,6 +1114,49 @@ static int do_ipmi_command(struct cmd_tbl *cmdtp, int flag, int argc, char * con
+ 	return 0;
+ }
+ 
++do_espi_uart_command(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
++{
++	int i;
++	u8 resp[MAX_RESP_LEN];
++	u8 data;
++	char *nuvoton ;
++	if (strcmp(argv[1], "auto") == 0) {
++
++		nuvoton = "Nuvoton Technology Corporation (Nuvoton) was founded to bring innovative semiconductor solutions to the market. Nuvoton was spun-off as a Winbond Electronics affiliate in July 2008 and went public in September 2010 on the Taiwan Stock Exchange (TWSE).Nuvoton focuses on the developments of microcontroller/audio, cloud security, battery monitoring, component, visual sensing and IoT with security ICs and has strong market share in Industrial, Automotive, Communication, Consumer and Computer markets. Nuvoton owns 6-inch wafer fabs equipped with diversified processing technologies to provide professional wafer foundry services. Nuvoton provides products with a high performance/cost ratio for its customers by leveraging flexible technology, advanced design capability, and integration of digital and analog technologies. Nuvoton values long term relationships with its partners and customers and is dedicated to continuous innovation of its products, processes, and services. Nuvoton has established subsidiaries in the USA, China, Israel, India, Singapore, Korea, Japan and Germany to strengthen regional customer support and global management. For more information, please visit http://www.nuvoton.com \n";
++
++
++		for ( i = 0; i < strlen(nuvoton); i++) {
++			sprintf(&data, "%c", nuvoton[i]);
++			espi_put_iowr(0x3f8, &data, 1, resp);
++			udelay(100);
++		}
++		return 0;
++	}
++
++	if (strcmp(argv[1], "manual") == 0) {
++		char *endp;
++		ulong addr;
++		ulong len;
++
++		addr = hextoul(argv[2], NULL);
++		len = hextoul(argv[3], NULL);
++
++		nuvoton = (char *)addr;
++
++		for ( i = 0; i < len; i++) {
++			sprintf(&data, "%c", nuvoton[i]);
++			espi_put_iowr(0x3f8, &data, 1, resp);
++			udelay(100);
++		}
++
++
++		return 0;
++	}
++
++	return 0;
++
++}
++
+ U_BOOT_CMD(
+ 	espi ,	5,	1,	do_espi_command,
+ 	"espi master command",
+@@ -1149,3 +1192,13 @@ U_BOOT_CMD(
+ 	"     info - show bmc info\n"
+ 	" sdr - show sensor reading\n"
+ );
++
++U_BOOT_CMD(
++	espi_uart ,	4,	1,	do_espi_uart_command,
++	"host uart demo",
++	"<command> [<argument1>] [<argument2>]\n"
++	" auto - send default pattern\n"
++	" manual\n"
++	"  	<argument1> - address\n"
++	"  	<argument2> - data len (bytes)\n"
++);
+-- 
+2.34.1
+
