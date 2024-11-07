@@ -1,40 +1,40 @@
-From bac5361655ae692fe7223ccc46f5faf6151d69cf Mon Sep 17 00:00:00 2001
+From 067dddd0e0644fa00dae284db56b2bb2509bf9d4 Mon Sep 17 00:00:00 2001
 From: Joseph Liu <kwliu@nuvoton.com>
 Date: Tue, 8 Oct 2024 18:32:19 +0800
-Subject: [PATCH] oem-meta: support vwgpio post completed event bridge
+Subject: [PATCH] oem-meta: support vwgpio event bridge
 
 Signed-off-by: Joseph Liu <kwliu@nuvoton.com>
 ---
  libpldmresponder/meson.build                  |  1 +
- .../libpldmresponder/oem_meta_file_io.cpp     |  4 ++
+ .../libpldmresponder/oem_meta_file_io.cpp     |  4 +
  .../oem_meta_file_io_by_type.hpp              |  1 +
- .../oem_meta_file_io_type_post_completed.cpp  | 44 ++++++++++++++++
- .../oem_meta_file_io_type_post_completed.hpp  | 52 +++++++++++++++++++
- 5 files changed, 102 insertions(+)
- create mode 100644 oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp
- create mode 100644 oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp
+ .../oem_meta_file_io_type_vw_gpio.cpp         | 85 +++++++++++++++++++
+ .../oem_meta_file_io_type_vw_gpio.hpp         | 52 ++++++++++++
+ 5 files changed, 143 insertions(+)
+ create mode 100644 oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.cpp
+ create mode 100644 oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.hpp
 
 diff --git a/libpldmresponder/meson.build b/libpldmresponder/meson.build
-index 040cd8882..f4bdd03ee 100644
+index 040cd8882..7f44a5abc 100644
 --- a/libpldmresponder/meson.build
 +++ b/libpldmresponder/meson.build
 @@ -67,6 +67,7 @@ if get_option('oem-meta').allowed()
      sources += [
          '../oem/meta/libpldmresponder/oem_meta_file_io.cpp',
          '../oem/meta/libpldmresponder/oem_meta_file_io_type_post_code.cpp',
-+        '../oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp',
++        '../oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.cpp',
      ]
  endif
  
 diff --git a/oem/meta/libpldmresponder/oem_meta_file_io.cpp b/oem/meta/libpldmresponder/oem_meta_file_io.cpp
-index aedffbc9e..0f3a4d527 100644
+index aedffbc9e..e090fcd28 100644
 --- a/oem/meta/libpldmresponder/oem_meta_file_io.cpp
 +++ b/oem/meta/libpldmresponder/oem_meta_file_io.cpp
 @@ -1,6 +1,7 @@
  #include "oem_meta_file_io.hpp"
  
  #include "oem_meta_file_io_type_post_code.hpp"
-+#include "oem_meta_file_io_type_post_completed.hpp"
++#include "oem_meta_file_io_type_vw_gpio.hpp"
  #include "xyz/openbmc_project/Common/error.hpp"
  
  #include <libpldm/oem/meta/ipmi_bridge.h>
@@ -42,35 +42,45 @@ index aedffbc9e..0f3a4d527 100644
          case POST_CODE:
              return std::make_unique<PostCodeHandler>(
                  messageTid, configurationDescovery->getConfigurations());
-+        case VW_POST_COMPLETED:
-+            return std::make_unique<VWPostCompletedHandler>(
++        case VW_GPIO:
++            return std::make_unique<vwGpioHandler>(
 +                messageTid, configurationDescovery->getConfigurations());
          default:
              error("Get invalid file io type, FILEIOTYPE={FILEIOTYPE}",
                    "FILEIOTYPE", fileIOType);
 diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp b/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp
-index 6e8bd44c6..c2a1a0af4 100644
+index 6e8bd44c6..3a7e3472b 100644
 --- a/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp
 +++ b/oem/meta/libpldmresponder/oem_meta_file_io_by_type.hpp
 @@ -18,6 +18,7 @@ constexpr auto ipmiDataMaxLength = 1024;
  enum pldm_oem_meta_file_io_type : uint8_t
  {
      POST_CODE = 0x00,
-+    VW_POST_COMPLETED = 0x06,
++    VW_GPIO = 0x06,
  };
  
  class FileHandler
-diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp
+diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.cpp b/oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.cpp
 new file mode 100644
-index 000000000..e051ccb6e
+index 000000000..07bdf64f5
 --- /dev/null
-+++ b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.cpp
-@@ -0,0 +1,44 @@
-+#include "oem_meta_file_io_type_post_completed.hpp"
++++ b/oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.cpp
+@@ -0,0 +1,85 @@
++#include "oem_meta_file_io_type_vw_gpio.hpp"
 +
 +#include <phosphor-logging/lg2.hpp>
 +
 +#include <utility>
++
++#define BIT(i)			(1 << i)
++#define DIRECTION_MS		BIT(7)
++#define VW_DATA_INDEX		0
++#define VW_VALID_INDEX		4
++#define VW_GPIO_NUM		4
++
++#define VW_GPIO_MSG_SIZE	2
++#define VW_SM_GPIO_SUM          64
++#define POST_COMPLETE_EVENT	127
 +
 +PHOSPHOR_LOG2_USING;
 +namespace pldm::responder::oem_meta
@@ -78,11 +88,42 @@ index 000000000..e051ccb6e
 +
 +using postcompleted_t = bool;
 +
-+int VWPostCompletedHandler::write(const message& data)
++int vwGpioHandler::write(const message& vwGpioList)
 +{
-+    //uint8_t is_completed = data[0];
++    uint8_t data[VW_GPIO_MSG_SIZE] = {0};
++    uint8_t index = 0;
++    uint8_t vw_pin;
 +    pldm::utils::DBusMapping dbusMapping;
 +    bool postComplete = data[0];
++
++    if (vwGpioList.size() != VW_GPIO_MSG_SIZE) {
++        error("VW gpio message size is not accepted");
++        return PLDM_ERROR;
++    }
++
++    data[0] = vwGpioList[0];
++    data[1] = vwGpioList[1];
++
++    if (!(data[1] & DIRECTION_MS)) {
++        error("VW gpio StoM direction is not accepted");
++        return PLDM_ERROR;
++    }
++
++    for (vw_pin = 0; vw_pin < VW_GPIO_NUM; vw_pin++) {
++        if (data[0] & BIT((VW_VALID_INDEX + vw_pin))) {
++            index = vw_pin;
++            vw_pin += (data[1] & ~DIRECTION_MS) * VW_GPIO_NUM + VW_SM_GPIO_SUM;
++            switch (vw_pin) {
++                case POST_COMPLETE_EVENT:
++                    postComplete = (data[0] & BIT(index)) ? false : true;;
++                    break;
++                default:
++                    error("VW gpio pin is not accepted");
++                    return PLDM_ERROR;
++            }
++        }
++    }
++
 +
 +    static constexpr auto dbusService = "xyz.openbmc_project.Host.Misc.Manager";
 +    static constexpr auto dbusObj = "/xyz/openbmc_project/misc/platform_state";
@@ -110,11 +151,11 @@ index 000000000..e051ccb6e
 +}
 +
 +} // namespace pldm::responder::oem_meta
-diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp
+diff --git a/oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.hpp b/oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.hpp
 new file mode 100644
-index 000000000..d7c499ac5
+index 000000000..9a36d585d
 --- /dev/null
-+++ b/oem/meta/libpldmresponder/oem_meta_file_io_type_post_completed.hpp
++++ b/oem/meta/libpldmresponder/oem_meta_file_io_type_vw_gpio.hpp
 @@ -0,0 +1,52 @@
 +#pragma once
 +
@@ -124,20 +165,20 @@ index 000000000..d7c499ac5
 +
 +namespace pldm::responder::oem_meta
 +{
-+/** @class VWPostCompletedHandler
++/** @class vwGpioHandler
 + *
 + *  @brief Inherits and implements FileHandler. This class is used
 + *  to store incoming postcode
 + */
-+class VWPostCompletedHandler : public FileHandler
++class vwGpioHandler : public FileHandler
 +{
 +  public:
-+    VWPostCompletedHandler(pldm_tid_t tid,
++    vwGpioHandler(pldm_tid_t tid,
 +                    const std::map<std::string, MctpEndpoint>& configurations) :
 +        tid(tid), configurations(configurations)
 +    {}
 +
-+    ~VWPostCompletedHandler() = default;
++    ~vwGpioHandler() = default;
 +
 +    /** @brief Method to store postcode list
 +     *  @param[in] data - post code
